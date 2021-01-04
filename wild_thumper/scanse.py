@@ -1,6 +1,10 @@
 """
 The scanse module contains functions for interaction with the scanse scanner.
 """
+import threading
+from datetime import datetime
+
+from sweeppy import Sweep
 
 
 class Scanner(threading.Thread):
@@ -15,10 +19,10 @@ class Scanner(threading.Thread):
         self.counter = 0
         self.stop_criterion = stop_criterion
 
-    # Iterate over an infinite scan generator. Stop when asked to do so
     def run(self):
         """
         Start scanner thread. Puts the scans into a queue until the `stop_criterion` is achieved
+        The scan is put in a dict alongside a timestamp
         """
         with Sweep(self.dev) as sweep:
             sweep.start_scanning()
@@ -29,7 +33,7 @@ class Scanner(threading.Thread):
                     print("gathered {} scans".format(self.counter))
                     break
                 else:
-                    self.queue.put_nowait(scan)
+                    self.queue.put_nowait({'time': datetime.now(), 'scan': scan})
                     self.counter += 1
 
             sweep.stop_scanning()
@@ -44,8 +48,6 @@ class ScanGetter(threading.Thread):
         super().__init__()
         self.queue = queue
         self.scans = []
-
-
 
     def run(self):
         """
