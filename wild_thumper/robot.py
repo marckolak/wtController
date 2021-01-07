@@ -47,11 +47,11 @@ class Robot:
             speed in -1 to 1 range
 
         """
-        if direction in Robot.speed_dict.keys:
+        if direction in Robot.speed_dict.keys():
             speed_l, speed_r = Robot.speed_dict[direction] * speed  # get L/R motor speeds
+            print('speed set to {}, {}'.format(speed_l, speed_r))
             self.motor_left.set_target_speed(speed_l)
             self.motor_right.set_target_speed(speed_r)
-            print('speed set to {}, {}'.format(speed_l, speed_r))
 
         elif direction == 'arc':
             pass
