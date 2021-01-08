@@ -20,5 +20,25 @@ private:
     Ui::MainWindow *ui;
 
     QTcpSocket *socket;
+
+    double speed = 0;
+
+private slots:
+    void onConnect(bool toggled);
+
+    void onUpPressed(void);
+    void onUpReleased(void);
+
+    void onLeftPressed(void);
+    void onLeftReleased(void);
+
+    void onRightPressed(void);
+    void onRightReleased(void);
+
+    void onDownPressed(void);
+    void onDownReleased(void);
+
+    void onSliderValueChanged(int value);
+
 };
 #endif // MAINWINDOW_H
