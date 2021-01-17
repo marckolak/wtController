@@ -1,0 +1,81 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{RGB}{252,252,252}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstdefinelanguage{json}{
+    basicstyle=\normalfont\ttfamily,
+    numbers=left,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines,
+    backgroundcolor=\color{background},
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
+
+
+\author{marckolak}
+\title{Wild Thumper project communication protocol}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+The communication between the Raspberry Pi based controller is performed over WiFi using TCP. The controller offeres a single TCP socket so only one client might be connected.
+
+The packets include a JSON formatted payload. The payload should have the following structure:
+\vspace{6pt}
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+	"cmd": str,
+  	"payload": "file"
+}
+\end{lstlisting}
+where \texttt{cmd} is the command name and \texttt{payload} includes command parameters e.g. direction of motion, number of scans to be taken.
+
+\section{Commands}
+The following section includes the description of the commands, which are the controller is able to interpret and execute.
+
+\subsection{Movement commands - \texttt{move}}
+The movement commands have the following structure:
+\vspace{6pt}
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+	"cmd": "move,
+  	"payload": {
+		"dir": str,
+		"speed": number,
+		"time": number,
+		"args": object
+  	}
+}
+\end{lstlisting}
+\end{document}
