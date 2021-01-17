@@ -1,19 +1,36 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QString>
+#include <QKeyEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    // connect keyboard related signals and slots
+    connect(this, &MainWindow::upKeyPressed, this, &MainWindow::onUpPressed);
+    connect(this, &MainWindow::upKeyReleased, this, &MainWindow::onUpReleased);
+
+    connect(this, &MainWindow::leftKeyPressed, this, &MainWindow::onLeftPressed);
+    connect(this, &MainWindow::leftKeyReleased, this, &MainWindow::onLeftReleased);
+
+    connect(this, &MainWindow::rightKeyPressed, this, &MainWindow::onRightPressed);
+    connect(this, &MainWindow::rightKeyReleased, this, &MainWindow::onRightReleased);
+
+    connect(this, &MainWindow::downKeyPressed, this, &MainWindow::onDownPressed);
+    connect(this, &MainWindow::downKeyReleased, this, &MainWindow::onDownReleased);
+
     ui->setupUi(this);
     socket = new QTcpSocket(this);
     ui->speedValueLabel->setText("0");
+
+    // grab all keyboard events
+    this->grabKeyboard();
 }
 
 MainWindow::~MainWindow()
 {
-
+    this->releaseKeyboard();
     socket->close();
     delete ui;
 }
@@ -23,7 +40,6 @@ void MainWindow::onConnect(bool toggled)
 {
     if(toggled)
     {
-
         socket->connectToHost("192.168.0.200", 4312);
 
         if(socket->waitForConnected(500))
@@ -51,9 +67,65 @@ void MainWindow::onConnect(bool toggled)
 
 void MainWindow::onSliderValueChanged(int value)
 {
-    speed = value/100.0;
+    speed = value/100.0; // speed in 0-1 range
     qDebug() << speed;
     ui->speedValueLabel->setText(QString::number(speed));
+}
+
+
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    bool autoRepeated = event->isAutoRepeat();
+
+    if(!autoRepeated ) // run only if it's an original event
+    {
+        switch(event->key())
+        {
+        case Qt::Key_Up:
+            emit upKeyPressed();
+            break;
+        case Qt::Key_Left:
+            emit leftKeyPressed();
+            break;
+        case Qt::Key_Right:
+            emit rightKeyPressed();
+            break;
+        case Qt::Key_Down:
+            emit downKeyPressed();
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+    bool autoRepeated = event->isAutoRepeat();
+
+    if(!autoRepeated)
+    {
+        switch(event->key()) // run only if it's an original event
+        {
+        case Qt::Key_Up:
+            emit upKeyReleased();
+            break;
+        case Qt::Key_Left:
+            emit leftKeyReleased();
+            break;
+        case Qt::Key_Right:
+            emit rightKeyReleased();
+            break;
+        case Qt::Key_Down:
+            emit downKeyReleased();
+            break;
+        default:
+            break;
+
+        }
+    }
+
 }
 
 
