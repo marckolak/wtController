@@ -73,6 +73,7 @@ def process_message(data, conn, robot):
                 robot.move(payload["direction"], payload["speed"])
 
     except json.decoder.JSONDecodeError:
+        robot.move('stop', 0)  # stop the robot from moving
         print("JSON decoding error for data: ", data)
 
 
