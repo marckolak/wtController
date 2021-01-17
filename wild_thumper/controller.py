@@ -6,14 +6,17 @@ import socket
 
 import serial
 
-from wild_thumper.robot import Robot
-from wild_thumper.smcg2 import SmcG2Serial, open_port
+import sys
+sys.path.append('../')
 
-HOST = '127.0.0.1'  # localhost
+from robot import Robot
+from smcg2 import SmcG2Serial, open_port
+
+HOST = '192.168.0.200'  # localhost
 PORT = 4312  # port
 
-mc_left_port = "USB0"
-mc_right_port = "USB1"
+mc_left_port = "/dev/ttyLeftMotor"
+mc_right_port = "/dev/ttyRightMotor"
 scanner_port = "USB2"
 
 
@@ -38,7 +41,14 @@ def init_motor_controllers(mc_left_port, mc_right_port):
         mc_port_r = open_port(mc_right_port)
 
         smc_left = SmcG2Serial(mc_port_l, None)
+        smc_left.exit_safe_start()
+        smc_left.set_target_speed(0)
+        print("Left SmcG2 error status: 0x{:04X}".format(smc_left.get_error_status()))
+       
         smc_right = SmcG2Serial(mc_port_r, None)
+        smc_right.exit_safe_start()
+        smc_right.set_target_speed(0)
+        print("Left SmcG2 error status: 0x{:04X}".format(smc_right.get_error_status()))
 
         return smc_left, smc_right
 
@@ -72,9 +82,9 @@ def main():
     try:  # controller initialization and main loop
 
         s = init_socket(HOST, PORT)  # initialize socket
-        # smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
+        smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
         scanner = init_scanner('')  # initialize scanner
-        smc_left, smc_right = None, None
+        #smc_left, smc_right = None, None
 
         robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner)
 

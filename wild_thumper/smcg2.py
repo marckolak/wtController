@@ -56,7 +56,6 @@ class SmcG2Serial(object):
 
         """
         speed = int(speed*3200)
-        print(speed)
         cmd = 0x85  # Motor forward
         if speed < 0:
             cmd = 0x86  # Motor reverse
