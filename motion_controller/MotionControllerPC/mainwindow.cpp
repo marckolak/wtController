@@ -24,7 +24,7 @@ void MainWindow::onConnect(bool toggled)
     if(toggled)
     {
 
-        socket->connectToHost("127.0.0.1", 4312);
+        socket->connectToHost("192.168.0.200", 4312);
 
         if(socket->waitForConnected(500))
         {
