@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "settings.h"
 #include "ui_mainwindow.h"
 #include <QString>
 #include <QKeyEvent>
@@ -24,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     socket = new QTcpSocket(this);
     ui->speedValueLabel->setText("0");
 
+    Settings::loadSettings();
+
     // grab all keyboard events
     this->grabKeyboard();
 }
@@ -40,7 +43,7 @@ void MainWindow::onConnect(bool toggled)
 {
     if(toggled)
     {
-        socket->connectToHost("192.168.0.200", 4312);
+        socket->connectToHost(Settings::host, Settings::port);
 
         if(socket->waitForConnected(500))
         {
