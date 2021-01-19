@@ -12,6 +12,8 @@ sys.path.append('../')
 from wild_thumper.robot import Robot
 from wild_thumper.smcg2 import SmcG2Serial, open_port
 
+dummy_mode = False
+
 
 class ControllerInitError(Exception):
     def __init__(self, message):
@@ -41,12 +43,15 @@ def init_motor_controllers(mc_left_port, mc_right_port):
         smc_right = SmcG2Serial(mc_port_r, None)
         smc_right.exit_safe_start()
         smc_right.set_target_speed(0)
-        print("Left SmcG2 error status: 0x{:04X}".format(smc_right.get_error_status()))
+        print("Right SmcG2 error status: 0x{:04X}".format(smc_right.get_error_status()))
 
         return smc_left, smc_right
 
     except serial.SerialException as serr:
-        raise ControllerInitError("Motor controller error: {}".format(serr))
+        if dummy_mode:
+            return SmcG2Serial(serial.Serial(), None, dummy=True), SmcG2Serial(serial.Serial(), None, dummy=True)
+        else:
+            raise ControllerInitError("Motor controller error: {}".format(serr))
 
 
 def init_scanner(scanner_port):
@@ -80,11 +85,12 @@ def main():
             with open('controller_settings.json') as f:
                 settings = json.load(f)
 
-
+            global dummy_mode
+            dummy_mode = settings['dummy']
             HOST = settings['host']  # localhost
             PORT = settings['port']  # port
 
-            mc_left_port =  settings['left_motor']
+            mc_left_port = settings['left_motor']
             mc_right_port = settings['right_motor']
             scanner_port = settings['scanner']
         except (FileNotFoundError, KeyError) as e:
