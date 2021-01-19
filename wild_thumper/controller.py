@@ -9,15 +9,8 @@ import serial
 import sys
 sys.path.append('../')
 
-from robot import Robot
-from smcg2 import SmcG2Serial, open_port
-
-HOST = '192.168.0.200'  # localhost
-PORT = 4312  # port
-
-mc_left_port = "/dev/ttyLeftMotor"
-mc_right_port = "/dev/ttyRightMotor"
-scanner_port = "USB2"
+from wild_thumper.robot import Robot
+from wild_thumper.smcg2 import SmcG2Serial, open_port
 
 
 class ControllerInitError(Exception):
@@ -73,6 +66,7 @@ def process_message(data, conn, robot):
                 robot.move(payload["direction"], payload["speed"])
 
     except json.decoder.JSONDecodeError:
+        robot.move('stop', 0)  # stop the robot from moving
         print("JSON decoding error for data: ", data)
 
 
@@ -80,6 +74,21 @@ def main():
     print("Starting wild thumper controller")
 
     try:  # controller initialization and main loop
+
+        # load settings
+        try:
+            with open('controller_settings.json') as f:
+                settings = json.load(f)
+
+
+            HOST = settings['host']  # localhost
+            PORT = settings['port']  # port
+
+            mc_left_port =  settings['left_motor']
+            mc_right_port = settings['right_motor']
+            scanner_port = settings['scanner']
+        except (FileNotFoundError, KeyError) as e:
+            raise ControllerInitError('\033[91m' +'Error while loading settings:  ' + str(e) + '\033[0m')
 
         s = init_socket(HOST, PORT)  # initialize socket
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
@@ -110,6 +119,7 @@ def main():
 
     except ControllerInitError as e:
         print(e)
+        print("Closing the controller application...")
 
 
 if __name__ == "__main__":

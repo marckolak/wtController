@@ -1,0 +1,7 @@
+{
+    "host": "192.168.0.200",
+    "port": 4321,
+    "left_motor": "/dev/ttyLeftMotor",
+    "right_motor": "/dev/ttyRightMotor",
+    "scanner": "/dev/ttyScanse"
+}

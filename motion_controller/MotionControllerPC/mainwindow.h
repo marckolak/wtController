@@ -23,6 +23,25 @@ private:
 
     double speed = 0;
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+
+signals:
+    void upKeyPressed(void);
+    void upKeyReleased(void);
+
+    void leftKeyPressed(void);
+    void leftKeyReleased(void);
+
+    void rightKeyPressed(void);
+    void rightKeyReleased(void);
+
+    void downKeyPressed(void);
+    void downKeyReleased(void);
+
+
+
 private slots:
     void onConnect(bool toggled);
 
