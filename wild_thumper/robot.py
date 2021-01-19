@@ -36,6 +36,12 @@ class Robot:
 
         self.motion_history = []  # motion history ts - motion parameters (for dead reckoning)
 
+        self.start_timestamp = datetime.datetime.now().timestamp()
+        session_start = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
+        self.motion_file = open('slam_{}_motion.txt'.format(session_start), 'a+')
+        self.scan_file = open('slam_{}_scan.txt'.format(session_start), 'a+')
+
     def move(self, direction, speed):
         """Move the robot. Sets speeds. To stop the robot invoke again with `direction` equal to `'stop'`.
 
@@ -61,4 +67,7 @@ class Robot:
             self.motor_right.set_target_speed(0)
 
         # add to history for movement tracking reasons
-        self.motion_history.append([datetime.datetime.now(), direction, speed])
+        set_time = datetime.datetime.now().timestamp() - self.start_timestamp
+        self.motion_history.append([set_time, direction, speed])
+        self.motion_file.write('{},{},{}\n'.format(set_time, direction, speed))
+        self.motion_file.flush()
