@@ -59,5 +59,6 @@ private slots:
 
     void onSliderValueChanged(int value);
 
+    void onScan(bool toggled);
 };
 #endif // MAINWINDOW_H

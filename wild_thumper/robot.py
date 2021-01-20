@@ -2,9 +2,13 @@
 The robot module contains classes and functions implementing the platform controller.
 """
 import datetime
-
+import time
+import queue
+import threading
 import numpy as np
+from sweeppy import Sweep
 
+from wild_thumper.scanse import Scanner, ScanGetter
 
 class Robot:
     """
@@ -32,7 +36,7 @@ class Robot:
 
         self.motor_left = motor_left  # left motor controller
         self.motor_right = motor_right  # right motor controller
-        self.scanner = scanner  # LiDAR
+        self.scanner_port = scanner  # LiDAR
 
         self.motion_history = []  # motion history ts - motion parameters (for dead reckoning)
 
@@ -41,6 +45,8 @@ class Robot:
 
         self.motion_file = open('slam_{}_motion.txt'.format(session_start), 'a+')
         self.scan_file = open('slam_{}_scan.txt'.format(session_start), 'a+')
+
+        self.scanning_done = None
 
     def move(self, direction, speed):
         """Move the robot. Sets speeds. To stop the robot invoke again with `direction` equal to `'stop'`.
@@ -71,3 +77,50 @@ class Robot:
         self.motion_history.append([set_time, direction, speed])
         self.motion_file.write('{},{},{}\n'.format(set_time, direction, speed))
         self.motion_file.flush()
+
+    def process_scan_message(self, payload):
+
+        try:
+            if payload['action'] == 'start':
+                self.start_scanner(speed=payload['speed'], rate=payload['rate'])
+
+            elif payload['action'] == 'stop':
+                self.scanning_done.set()
+        except Exception:
+            pass
+
+    def stop_scanner(self):
+
+        try:
+            with Sweep(self.scanner_port) as sweep:
+                sweep.set_motor_speed(0)
+                print("Scanner stopped")
+        except RuntimeError as e:
+            print('Scanner error: ' + str(e))
+
+    def start_scanner(self, speed, rate):
+
+        try:
+            print(type(speed))
+            with Sweep(self.scanner_port) as sweep:
+                sweep.set_motor_speed(2)
+                # sweep.set_sample_rate(790)
+                for i in range(20):
+                    ready = sweep.get_motor_ready()
+                    if ready:
+                        print('scanner ready to scan')
+                        print(sweep.get_sample_rate())
+                        break
+                    else:
+                        time.sleep(1)
+
+            self.scanning_done = threading.Event()
+            fifo = queue.Queue()
+            scanner = Scanner(self.scanner_port, fifo, self.scanning_done)
+            getter = ScanGetter(fifo, self.scan_file)
+
+            scanner.start()
+            getter.start()
+
+        except RuntimeError as e:
+            print('Scanner error: ' + str(e))

@@ -3,14 +3,13 @@ The controller file contains the main script, which enables platform's work.
 """
 import json
 import socket
-
-import serial
-
 import sys
-sys.path.append('../')
-
+from sweeppy import Sweep
 from wild_thumper.robot import Robot
 from wild_thumper.smcg2 import SmcG2Serial, open_port
+import serial
+sys.path.append('../')
+
 
 dummy_mode = False
 
@@ -39,7 +38,7 @@ def init_motor_controllers(mc_left_port, mc_right_port):
         smc_left.exit_safe_start()
         smc_left.set_target_speed(0)
         print("Left SmcG2 error status: 0x{:04X}".format(smc_left.get_error_status()))
-       
+
         smc_right = SmcG2Serial(mc_port_r, None)
         smc_right.exit_safe_start()
         smc_right.set_target_speed(0)
@@ -55,10 +54,14 @@ def init_motor_controllers(mc_left_port, mc_right_port):
 
 
 def init_scanner(scanner_port):
-    # initialize LiDAR
-    scanner = None
-
-    return scanner
+    # initialize LiDAR - set speed to 0 Hz
+    try:
+        with Sweep(scanner_port) as sweep:
+            print(sweep.get_sample_rate())
+            sweep.set_motor_speed(0)
+    except RuntimeError as e:
+        print('Scanner error: ' + str(e))
+    return None
 
 
 def process_message(data, conn, robot):
@@ -69,6 +72,8 @@ def process_message(data, conn, robot):
         if cmd == 'move':
             if payload['time'] <= 0:
                 robot.move(payload["direction"], payload["speed"])
+        if cmd == 'scan':
+            robot.process_scan_message(payload)
 
     except json.decoder.JSONDecodeError:
         robot.move('stop', 0)  # stop the robot from moving
@@ -94,15 +99,16 @@ def main():
             mc_right_port = settings['right_motor']
             scanner_port = settings['scanner']
         except (FileNotFoundError, KeyError) as e:
-            raise ControllerInitError('\033[91m' +'Error while loading settings:  ' + str(e) + '\033[0m')
+            raise ControllerInitError('\033[91m' + 'Error while loading settings:  ' + str(e) + '\033[0m')
 
         s = init_socket(HOST, PORT)  # initialize socket
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
-        scanner = init_scanner('')  # initialize scanner
-        #smc_left, smc_right = None, None
+        init_scanner(scanner_port)  # initialize scanner
+        # smc_left, smc_right = None, None
 
-        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner)
+        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port)
 
+        robot.process_scan_message(None)
         while True:  # main program loop
             print("Awaiting connection...")
             s.listen()
@@ -121,7 +127,6 @@ def main():
             except socket.error as err:
                 print("Socket error: ", err)
                 print(type(err))
-
 
     except ControllerInitError as e:
         print(e)

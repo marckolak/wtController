@@ -3,6 +3,6 @@
     "port": 4321,
     "left_motor": "/dev/ttyLeftMotor",
     "right_motor": "/dev/ttyRightMotor",
-    "scanner": "/dev/ttyScanse",
+    "scanner": "COM3",
     "dummy": true
 }

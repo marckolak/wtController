@@ -195,3 +195,23 @@ void MainWindow::onDownReleased(void)
                   .arg(0)
                   .toLocal8Bit());
 }
+
+
+void MainWindow::onScan(bool toggled)
+{
+    if(toggled)
+    {
+        ui->textEdit->setText(QString("Start Scanning"));
+        socket->write(QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"start\", \"speed\": 5, \"rate\": 1 }}")
+                      .toLocal8Bit());
+    }
+    else
+    {
+        ui->textEdit->setText(QString("Stop Scanning"));
+        socket->write(QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"stop\", \"speed\": 0, \"rate\": 0 }}")
+                      .toLocal8Bit());
+
+    }
+
+
+}

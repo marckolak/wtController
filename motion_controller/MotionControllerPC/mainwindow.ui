@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>208</height>
+    <height>246</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>310</x>
       <y>10</y>
       <width>239</width>
-      <height>151</height>
+      <height>174</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -88,6 +88,27 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="scanButton">
+       <property name="font">
+        <font>
+         <family>Consolas</family>
+         <pointsize>48</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>S</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget">
@@ -96,7 +117,7 @@
       <x>30</x>
       <y>10</y>
       <width>231</width>
-      <height>81</height>
+      <height>110</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -127,7 +148,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>140</y>
+      <y>170</y>
       <width>181</width>
       <height>22</height>
      </rect>
@@ -164,7 +185,7 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>100</y>
+      <y>130</y>
       <width>61</width>
       <height>31</height>
      </rect>
@@ -182,7 +203,7 @@
     <property name="geometry">
      <rect>
       <x>230</x>
-      <y>130</y>
+      <y>160</y>
       <width>47</width>
       <height>31</height>
      </rect>
@@ -371,6 +392,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>scanButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onScan(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>510</x>
+     <y>73</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>291</x>
+     <y>122</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onUpPressed()</slot>
@@ -383,5 +420,6 @@
   <slot>onRightPressed()</slot>
   <slot>onConnect(bool)</slot>
   <slot>onSliderValueChanged(int)</slot>
+  <slot>onScan(bool)</slot>
  </slots>
 </ui>
