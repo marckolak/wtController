@@ -24,7 +24,7 @@ class ControllerInitError(Exception):
 
 def init_socket(host, port):
     try:  # socket initialization
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind(('', port))
         print("Socket initialized at host {}, port {}".format(host, port))
         return s
@@ -67,7 +67,7 @@ def init_scanner(scanner_port):
     return None
 
 
-def process_message(data, conn, robot):
+def process_message(data, addr, robot):
     try:
         message = json.loads(data)
         cmd = message['cmd']
@@ -116,19 +116,18 @@ def main():
         # wait for uncoming packets
         while True:  
             print("Awaiting connection...")
-            s.listen()
-            conn, addr = s.accept()
+            # s.listen()
+            # conn, addr = s.accept()
             try:
-                with conn:
-                    print('Connected by', addr)
-                    while True:
-                        data = conn.recv(1024)
-                        if not data:
-                            print("Client disconnected. Connection {} lost".format(addr))
-                            break
+                # with conn:
+                while True:
+                    data, addr = s.recvfrom(1024)
+                    process_message(data, addr, robot)
 
-                        process_message(data, conn, robot)
-
+                    if not data:
+                        print("Client disconnected. Connection {} lost".format(addr))
+                        break
+                        
             except socket.error as err:
                 print("Socket error: ", err)
                 print(type(err))
