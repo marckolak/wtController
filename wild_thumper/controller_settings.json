@@ -1,8 +1,8 @@
 {
-    "host": "127.0.0.1",
+    "host": "192.168.0.200",
     "port": 4321,
     "left_motor": "/dev/ttyLeftMotor",
     "right_motor": "/dev/ttyRightMotor",
-    "scanner": "COM3",
+    "scanner": "/dev/ttyScanse",
     "dummy": true
 }

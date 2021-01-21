@@ -5,12 +5,15 @@ import json
 import socket
 import sys
 from sweeppy import Sweep
+
+sys.path.append('../')
+
 from wild_thumper.robot import Robot
 from wild_thumper.smcg2 import SmcG2Serial, open_port
 import serial
-sys.path.append('../')
 
 
+# global variable, which specifies the mode the controller works in - dummy mode allwos to communicate without peripherals
 dummy_mode = False
 
 
@@ -22,7 +25,7 @@ class ControllerInitError(Exception):
 def init_socket(host, port):
     try:  # socket initialization
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((host, port))
+        s.bind(('', port))
         print("Socket initialized at host {}, port {}".format(host, port))
         return s
     except socket.error as err:
@@ -57,7 +60,7 @@ def init_scanner(scanner_port):
     # initialize LiDAR - set speed to 0 Hz
     try:
         with Sweep(scanner_port) as sweep:
-            print(sweep.get_sample_rate())
+            sweep.set_sample_rate(750)
             sweep.set_motor_speed(0)
     except RuntimeError as e:
         print('Scanner error: ' + str(e))
@@ -101,15 +104,17 @@ def main():
         except (FileNotFoundError, KeyError) as e:
             raise ControllerInitError('\033[91m' + 'Error while loading settings:  ' + str(e) + '\033[0m')
 
+        # initialize peripherals
         s = init_socket(HOST, PORT)  # initialize socket
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
         init_scanner(scanner_port)  # initialize scanner
-        # smc_left, smc_right = None, None
 
+        # create robot instace
         robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port)
 
-        robot.process_scan_message(None)
-        while True:  # main program loop
+        # MAIN LOOP
+        # wait for uncoming packets
+        while True:  
             print("Awaiting connection...")
             s.listen()
             conn, addr = s.accept()
