@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, &MainWindow::downKeyReleased, this, &MainWindow::onDownReleased);
 
     ui->setupUi(this);
-    socket = new QTcpSocket(this);
+    socket = new QUdpSocket(this);
     ui->speedValueLabel->setText("0");
 
     Settings::loadSettings();
@@ -43,7 +43,8 @@ void MainWindow::onConnect(bool toggled)
 {
     if(toggled)
     {
-        socket->connectToHost(Settings::host, Settings::port);
+
+        socket->bind(QHostAddress(Settings::host), Settings::port);
 
         if(socket->waitForConnected(500))
         {
@@ -135,65 +136,77 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 void MainWindow::onUpPressed(void)
 {
     ui->textEdit->setText(QString("Moving forward with speed: %1").arg(speed));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"forward\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(speed)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"forward\", \"speed\": %1, \"time\": 0 }}")
+            .arg(speed)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
 }
 
 void MainWindow::onUpReleased(void)
 {
     ui->textEdit->setText(QString("Stopped"));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(0)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
+            .arg(0)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
 }
 
 void MainWindow::onLeftPressed(void)
 {
     ui->textEdit->setText(QString("Turning left with speed: %1").arg(speed));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"left\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(speed)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"left\", \"speed\": %1, \"time\": 0 }}")
+            .arg(speed)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
 }
 
 void MainWindow::onLeftReleased(void)
 {
     ui->textEdit->setText(QString("Stopped"));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(0)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
+            .arg(0)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
 }
 
 void MainWindow::onRightPressed(void)
 {
     ui->textEdit->setText(QString("Turning right with speed: %1").arg(speed));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"right\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(speed)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"right\", \"speed\": %1, \"time\": 0 }}")
+            .arg(speed)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
 }
 
 void MainWindow::onRightReleased(void)
 {
     ui->textEdit->setText(QString("Stopped"));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(0)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
+            .arg(0)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
 }
 
 void MainWindow::onDownPressed(void)
 {
     ui->textEdit->setText(QString("Moving backward with speed: %1").arg(speed));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"reverse\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(speed)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"reverse\", \"speed\": %1, \"time\": 0 }}")
+            .arg(speed)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
 }
 
 void MainWindow::onDownReleased(void)
 {
     ui->textEdit->setText(QString("Stopped"));
-    socket->write(QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
-                  .arg(0)
-                  .toLocal8Bit());
+    QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
+            .arg(0)
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
 }
 
 
@@ -202,14 +215,18 @@ void MainWindow::onScan(bool toggled)
     if(toggled)
     {
         ui->textEdit->setText(QString("Start Scanning"));
-        socket->write(QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"start\", \"speed\": 5, \"rate\": 1 }}")
-                      .toLocal8Bit());
+        QByteArray message = QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"start\", \"speed\": 5, \"rate\": 1 }}")
+                .toLocal8Bit();
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
     }
     else
     {
         ui->textEdit->setText(QString("Stop Scanning"));
-        socket->write(QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"stop\", \"speed\": 0, \"rate\": 0 }}")
-                      .toLocal8Bit());
+        QByteArray message = QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"stop\", \"speed\": 0, \"rate\": 0 }}")
+                .toLocal8Bit();
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
 
     }
 

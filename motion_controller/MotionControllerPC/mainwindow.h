@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTcpSocket>
+#include <QUdpSocket>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,7 +19,7 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    QTcpSocket *socket;
+    QUdpSocket *socket;
 
     double speed = 0;
 
