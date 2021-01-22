@@ -3,6 +3,9 @@
 #include "ui_mainwindow.h"
 #include <QString>
 #include <QKeyEvent>
+#include <QDateTime>
+#include <QNetworkInterface>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -23,7 +26,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
     socket = new QUdpSocket(this);
+    rcvSocket = new QUdpSocket(this);
     ui->speedValueLabel->setText("0");
+
+    // connect socket signal with main window slot
+    connect(rcvSocket, SIGNAL(readyRead()),
+            this, SLOT(readPendingData()));
 
     Settings::loadSettings();
 
@@ -44,28 +52,34 @@ void MainWindow::onConnect(bool toggled)
     if(toggled)
     {
 
-        socket->bind(QHostAddress(Settings::host), Settings::port);
+        rcvSocket->bind( QHostAddress("192.168.0.45"), Settings::rcvPort);
+        QByteArray message = QString("{\"cmd\": \"connect\", \"payload\": {\"port\": %1}}")
+                .arg(Settings::rcvPort)
+                .toLocal8Bit();
+        const QHostAddress &localhost = QHostAddress(QHostAddress::LocalHost);
+        QList<QHostAddress> list = QNetworkInterface::allAddresses();
 
-        if(socket->waitForConnected(500))
+        for(int nIter=0; nIter<list.count(); nIter++)
+
         {
-            qDebug() << "Connected!";
-            ui->textEdit->setText("Connected to the controller.");
-        }
-        else
-        {
-            qDebug() << "Not connected!";
-            ui->textEdit->setText("Can't connect to the controller.");
+            if(!list[nIter].isLoopback())
+                if (list[nIter].protocol() == QAbstractSocket::IPv4Protocol )
+                    qDebug() << list[nIter].toString();
 
         }
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+        ui->statusButton->setEnabled(true);
     }
     else
     {
-        socket->close();
-        qDebug() << "Closed!";
-        ui->textEdit->setText("Disconnected from the controller.");
 
+        QByteArray message = QString("{\"cmd\": \"disconnect\", \"payload\": {\"port\": %1}}")
+                .arg(Settings::rcvPort)
+                .toLocal8Bit();
+
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+        ui->statusButton->setEnabled(false);
     }
-
 
 }
 
@@ -135,7 +149,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 
 void MainWindow::onUpPressed(void)
 {
-    ui->textEdit->setText(QString("Moving forward with speed: %1").arg(speed));
+    //    ui->plainTextEdit->appendPlainText(QString("Moving forward with speed: %1").arg(speed));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"forward\", \"speed\": %1, \"time\": 0 }}")
             .arg(speed)
             .toLocal8Bit();
@@ -144,7 +158,7 @@ void MainWindow::onUpPressed(void)
 
 void MainWindow::onUpReleased(void)
 {
-    ui->textEdit->setText(QString("Stopped"));
+    //    ui->plainTextEdit->appendPlainText(QString("Stopped"));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
             .arg(0)
             .toLocal8Bit();
@@ -153,7 +167,7 @@ void MainWindow::onUpReleased(void)
 
 void MainWindow::onLeftPressed(void)
 {
-    ui->textEdit->setText(QString("Turning left with speed: %1").arg(speed));
+    //    ui->plainTextEdit->appendPlainText(QString("Turning left with speed: %1").arg(speed));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"left\", \"speed\": %1, \"time\": 0 }}")
             .arg(speed)
             .toLocal8Bit();
@@ -162,7 +176,7 @@ void MainWindow::onLeftPressed(void)
 
 void MainWindow::onLeftReleased(void)
 {
-    ui->textEdit->setText(QString("Stopped"));
+    //    ui->plainTextEdit->appendPlainText(QString("Stopped"));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
             .arg(0)
             .toLocal8Bit();
@@ -171,7 +185,7 @@ void MainWindow::onLeftReleased(void)
 
 void MainWindow::onRightPressed(void)
 {
-    ui->textEdit->setText(QString("Turning right with speed: %1").arg(speed));
+    //    ui->plainTextEdit->appendPlainText(QString("Turning right with speed: %1").arg(speed));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"right\", \"speed\": %1, \"time\": 0 }}")
             .arg(speed)
             .toLocal8Bit();
@@ -181,7 +195,7 @@ void MainWindow::onRightPressed(void)
 
 void MainWindow::onRightReleased(void)
 {
-    ui->textEdit->setText(QString("Stopped"));
+    //    ui->plainTextEdit->appendPlainText(QString("Stopped"));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
             .arg(0)
             .toLocal8Bit();
@@ -191,7 +205,7 @@ void MainWindow::onRightReleased(void)
 
 void MainWindow::onDownPressed(void)
 {
-    ui->textEdit->setText(QString("Moving backward with speed: %1").arg(speed));
+    //    ui->plainTextEdit->appendPlainText(QString("Moving backward with speed: %1").arg(speed));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"reverse\", \"speed\": %1, \"time\": 0 }}")
             .arg(speed)
             .toLocal8Bit();
@@ -201,7 +215,7 @@ void MainWindow::onDownPressed(void)
 
 void MainWindow::onDownReleased(void)
 {
-    ui->textEdit->setText(QString("Stopped"));
+    //    ui->plainTextEdit->appendPlainText(QString("Stopped"));
     QByteArray message = QString("{\"cmd\": \"move\", \"payload\": {\"direction\": \"stop\", \"speed\": %1, \"time\": 0 }}")
             .arg(0)
             .toLocal8Bit();
@@ -214,7 +228,7 @@ void MainWindow::onScan(bool toggled)
 {
     if(toggled)
     {
-        ui->textEdit->setText(QString("Start Scanning"));
+        //        ui->plainTextEdit->appendPlainText(QString("Start Scanning"));
         QByteArray message = QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"start\", \"speed\": 5, \"rate\": 1 }}")
                 .toLocal8Bit();
         socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
@@ -222,13 +236,36 @@ void MainWindow::onScan(bool toggled)
     }
     else
     {
-        ui->textEdit->setText(QString("Stop Scanning"));
+        //        ui->plainTextEdit->appendPlainText(QString("Stop Scanning"));
         QByteArray message = QString("{\"cmd\": \"scan\", \"payload\": {\"action\": \"stop\", \"speed\": 0, \"rate\": 0 }}")
                 .toLocal8Bit();
         socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
 
-
     }
 
+
+}
+
+void MainWindow::onStatus()
+{
+    QByteArray message = QString("{\"cmd\": \"status\", \"payload\": {}}")
+            .toLocal8Bit();
+    socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+
+}
+
+
+void MainWindow::readPendingData()
+{
+    // read incoming packet
+    QByteArray rPacket;
+    rPacket.resize(rcvSocket->pendingDatagramSize());
+    rcvSocket->readDatagram(rPacket.data(), rcvSocket->pendingDatagramSize());
+
+    QDateTime now = QDateTime::currentDateTime();
+    QString dateStr = now.toString("hh:mm:ss.z");
+
+    QString message = QString::fromUtf8(rPacket);
+    ui->plainTextEdit->appendPlainText(dateStr+"\t"+message);
 
 }
