@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QTcpSocket>
+#include <QUdpSocket>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,8 +19,13 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    QTcpSocket *socket;
+    //! socket for outgoing communication
+    QUdpSocket *socket;
 
+    //! socket for incoming communication
+    QUdpSocket *rcvSocket;
+
+    //! robot movement speed
     double speed = 0;
 
 protected:
@@ -43,6 +48,13 @@ signals:
 
 
 private slots:
+    //!
+    //! \brief onConnect connect to the robot
+    //!
+    //! Send a message containg the port, on which the app will listen for data.
+    //!
+    //! \param toggled send 'connect' command if true, else send 'disconnect'
+    //!
     void onConnect(bool toggled);
 
     void onUpPressed(void);
@@ -57,7 +69,23 @@ private slots:
     void onDownPressed(void);
     void onDownReleased(void);
 
+    //!
+    //! \brief onSliderValueChanged called when the speed slider value changes
+    //! \param value current slider value
+    //!
     void onSliderValueChanged(int value);
 
+    //!
+    //! \brief onScan sneds a command to the robot to either start or stop scanning
+    //! \param toggled whether it is turned of or not
+    //!
+    void onScan(bool toggled);
+
+    void onStatus();
+
+    //!
+    //! \brief readPendingData reads data coming to rcvSocket
+    //!
+    void readPendingData(void);
 };
 #endif // MAINWINDOW_H

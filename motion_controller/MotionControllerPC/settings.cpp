@@ -7,7 +7,7 @@
 QString Settings::host = "192.168.0.200";
 
 int Settings::port = 4321;
-
+int Settings::rcvPort = 4322;
 
 Settings::Settings()
 {
@@ -44,6 +44,9 @@ bool Settings::loadSettings()
 
     if (json.contains("port") && json["port"].isDouble())
         port = json["port"].toInt();
+
+    if (json.contains("rcvPort") && json["rcvPort"].isDouble())
+        rcvPort = json["rcvPort"].toInt();
 
     return true;
 

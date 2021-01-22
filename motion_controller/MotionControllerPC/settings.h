@@ -16,6 +16,9 @@ public:
     //! RPi Controller port
     static int port;
 
+    //! receive port
+    static int rcvPort;
+
 
 public:
     //!

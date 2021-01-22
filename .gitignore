@@ -211,3 +211,7 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+sandbox.ipynb
+wild_thumper/controller_settings.json
+*_scan*.txt
+*_motion.txt

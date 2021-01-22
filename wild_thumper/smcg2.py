@@ -1,7 +1,7 @@
 """
 The smcg2 module contains functions used for controlling motors using Simple Motoro Controller G2 from Pololu.
 """
-import serial
+from serial import PortNotOpenError, Serial
 
 
 class SmcG2Serial(object):
@@ -10,7 +10,7 @@ class SmcG2Serial(object):
     Taken from Pololu documentation
     """
 
-    def __init__(self, port, device_number=None):
+    def __init__(self, port, device_number=None, dummy=False):
         """
         Constructor
 
@@ -23,6 +23,7 @@ class SmcG2Serial(object):
         """
         self.port = port
         self.device_number = device_number
+        self.dummy = dummy
 
     def send_command(self, cmd, *data_bytes):
         """Sends command to the controller
@@ -34,11 +35,17 @@ class SmcG2Serial(object):
         data_bytes: bytes
             data bytes e.g. speed value
         """
-        if self.device_number is None:
-            header = [cmd]  # Compact protocol
-        else:
-            header = [0xAA, self.device_number, cmd & 0x7F]  # Pololu protocol
-        self.port.write(bytes(header + list(data_bytes)))
+        try:
+            if self.device_number is None:
+                header = [cmd]  # Compact protocol
+            else:
+                header = [0xAA, self.device_number, cmd & 0x7F]  # Pololu protocol
+            self.port.write(bytes(header + list(data_bytes)))
+        except PortNotOpenError as e:
+            if self.dummy:
+                pass
+            else:
+                raise e
 
     def exit_safe_start(self):
         """
@@ -55,7 +62,7 @@ class SmcG2Serial(object):
             speed in [-1,1] range, negative speed for backward movement
 
         """
-        speed = int(speed*3200)
+        speed = int(speed * 3200)
         cmd = 0x85  # Motor forward
         if speed < 0:
             cmd = 0x86  # Motor reverse
@@ -140,6 +147,6 @@ def open_port(port_name, baud_rate=9600, timeout=0.1, write_timeout=0.1):
     port: pyserial.Port
         opened USB port
     """
-    port = serial.Serial(port_name, timeout=0.1, write_timeout=0.1)
+    port = Serial(port_name, timeout=0.1, write_timeout=0.1)
 
     return port
