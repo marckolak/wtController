@@ -28,25 +28,33 @@ def init_socket(host, port):
         s.bind(('', port))
         print("Socket initialized at host {}, port {}".format(host, port))
         return s
+
     except socket.error as err:
         raise ControllerInitError(str(err))
 
 
-def init_motor_controllers(mc_left_port, mc_right_port):
+def init_motor_controllers(mc_left_port, mc_right_port, status_dict):
     try:  # initialize motor controllers
+        status_dict['left_motor'] = 0
         mc_port_l = open_port(mc_left_port)
         mc_port_r = open_port(mc_right_port)
 
+        # init left controller
         smc_left = SmcG2Serial(mc_port_l, None)
         smc_left.exit_safe_start()
         smc_left.set_target_speed(0)
-        print("Left SmcG2 error status: 0x{:04X}".format(smc_left.get_error_status()))
-
+        error_status_l = smc_left.get_error_status()
+        status_dict['left_motor'] = "0x{:04X}".format(error_status_l)
+        print("Left SmcG2 error status: 0x{:04X}".format(error_status_l))
+        
+        # init right controller
         smc_right = SmcG2Serial(mc_port_r, None)
         smc_right.exit_safe_start()
         smc_right.set_target_speed(0)
-        print("Right SmcG2 error status: 0x{:04X}".format(smc_right.get_error_status()))
-
+        error_status_r = smc_right.get_error_status()
+        status_dict['right_motor'] = "0x{:04X}".format(error_status_r)
+        print("Right SmcG2 error status: 0x{:04X}".format(error_status_r))
+        
         return smc_left, smc_right
 
     except serial.SerialException as serr:
@@ -62,6 +70,7 @@ def init_scanner(scanner_port):
         with Sweep(scanner_port) as sweep:
             sweep.set_sample_rate(750)
             sweep.set_motor_speed(0)
+
     except RuntimeError as e:
         print('Scanner error: ' + str(e))
     return None
@@ -69,14 +78,29 @@ def init_scanner(scanner_port):
 
 def process_message(data, addr, robot):
     try:
+        # load json object from message
         message = json.loads(data)
+        # get command and payload
         cmd = message['cmd']
         payload = message["payload"]
-        if cmd == 'move':
-            if payload['time'] <= 0:
+
+        # pass to other functions
+        if cmd == 'move': # move the platform
+            if payload['time'] <= 0:  # control in 'real time' - sets speed with no time constraints
                 robot.move(payload["direction"], payload["speed"])
-        if cmd == 'scan':
+
+        elif cmd == 'scan':  # start/stop LiDAR scanning
             robot.process_scan_message(payload)
+
+        elif cmd == 'connect':  # start sending data to a client
+            robot.connect((addr[0], payload['port']))
+
+        elif cmd == 'disconnect':  # stop sending data to a client
+            robot.disconnect()
+
+        elif cmd =='status':  # send status data to the connected client
+            robot.send_status()
+
 
     except json.decoder.JSONDecodeError:
         robot.move('stop', 0)  # stop the robot from moving
@@ -85,6 +109,10 @@ def process_message(data, addr, robot):
 
 def main():
     print("Starting wild thumper controller")
+
+    # init status dictionary
+    status_dict = {'left_motor': '404', 'right_motor': '404', 'scanner': '404'}
+    
 
     try:  # controller initialization and main loop
 
@@ -101,23 +129,23 @@ def main():
             mc_left_port = settings['left_motor']
             mc_right_port = settings['right_motor']
             scanner_port = settings['scanner']
-        except (FileNotFoundError, KeyError) as e:
+
+        except (FileNotFoundError, KeyError) as e:  # don't start the platform without settings file
             raise ControllerInitError('\033[91m' + 'Error while loading settings:  ' + str(e) + '\033[0m')
 
         # initialize peripherals
         s = init_socket(HOST, PORT)  # initialize socket
-        smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port)  # initialize motors
+        smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port, status_dict)  # initialize motors
         init_scanner(scanner_port)  # initialize scanner
 
         # create robot instace
-        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port)
+        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port, status_dict=status_dict)
 
         # MAIN LOOP
         # wait for uncoming packets
         while True:  
-            print("Awaiting connection...")
-            # s.listen()
-            # conn, addr = s.accept()
+            print("Awaiting data...")
+            
             try:
                 # with conn:
                 while True:
@@ -125,14 +153,14 @@ def main():
                     process_message(data, addr, robot)
 
                     if not data:
-                        print("Client disconnected. Connection {} lost".format(addr))
+                        print(" Connection with {} lost".format(addr))
                         break
                         
             except socket.error as err:
                 print("Socket error: ", err)
                 print(type(err))
 
-    except ControllerInitError as e:
+    except ControllerInitError as e:  # in case of a serious error, without which it is not worth it to start the platform
         print(e)
         print("Closing the controller application...")
 
