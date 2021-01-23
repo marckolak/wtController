@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QUdpSocket>
+
+#include "motioncontrolwidget.h"
+#include "communicationswidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,5 +21,27 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    MotionControlWidget *motionControl;
+
+    CommunicationsWidget *communications;
+
+    //! socket for outgoing communication
+    QUdpSocket *socket;
+
+    //! socket for incoming communication
+    QUdpSocket *rcvSocket;
+
+
+
+public:
+    QUdpSocket* getSocket(void);
+
+
+private slots:
+
+    void readPendingData(void);
+
+
 };
 #endif // MAINWINDOW_H

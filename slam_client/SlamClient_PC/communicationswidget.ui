@@ -82,5 +82,42 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>connectButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>CommunicationsWidget</receiver>
+   <slot>onConnect(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>128</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>statusButton</sender>
+   <signal>clicked()</signal>
+   <receiver>CommunicationsWidget</receiver>
+   <slot>onGetStatus()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>330</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onConnect(bool)</slot>
+  <slot>onGetStatus()</slot>
+ </slots>
 </ui>
