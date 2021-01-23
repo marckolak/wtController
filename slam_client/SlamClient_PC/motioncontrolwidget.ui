@@ -148,6 +148,17 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="keyboardCheckBox">
+        <property name="text">
+         <string>Keyboard
+control</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
@@ -234,5 +245,175 @@
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>leftButton</sender>
+   <signal>pressed()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onLeftPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>106</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>speedSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onSliderValueChanged(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>229</x>
+     <y>264</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>downButton</sender>
+   <signal>pressed()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onDownPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>downButton</sender>
+   <signal>released()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onArrowKeyReleased()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>upButton</sender>
+   <signal>pressed()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onUpPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rightButton</sender>
+   <signal>pressed()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onRightPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>350</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rightButton</sender>
+   <signal>released()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onArrowKeyReleased()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>350</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>upButton</sender>
+   <signal>released()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onArrowKeyReleased()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>leftButton</sender>
+   <signal>released()</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onArrowKeyReleased()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>106</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>keyboardCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MotionControlWidget</receiver>
+   <slot>onKeyboardChecked(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>79</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onUpPressed()</slot>
+  <slot>onLeftPressed()</slot>
+  <slot>onRightPressed()</slot>
+  <slot>onDownPressed()</slot>
+  <slot>onArrowKeyReleased()</slot>
+  <slot>onSliderValueChanged(int)</slot>
+  <slot>onKeyboardChecked(int)</slot>
+ </slots>
 </ui>

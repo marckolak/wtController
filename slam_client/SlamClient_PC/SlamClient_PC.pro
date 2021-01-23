@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,12 +12,14 @@ SOURCES += \
     communicationswidget.cpp \
     main.cpp \
     mainwindow.cpp \
-    motioncontrolwidget.cpp
+    motioncontrolwidget.cpp \
+    settings.cpp
 
 HEADERS += \
     communicationswidget.h \
     mainwindow.h \
-    motioncontrolwidget.h
+    motioncontrolwidget.h \
+    settings.h
 
 FORMS += \
     communicationswidget.ui \

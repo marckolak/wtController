@@ -18,7 +18,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="CommunicationsWidget" name="widget_2" native="true">
+       <widget class="CommunicationsWidget" name="communicationsWidget" native="true">
         <property name="minimumSize">
          <size>
           <width>460</width>
@@ -34,7 +34,7 @@
        </widget>
       </item>
       <item>
-       <widget class="MotionControlWidget" name="widget" native="true">
+       <widget class="MotionControlWidget" name="motionWidget" native="true">
         <property name="minimumSize">
          <size>
           <width>460</width>
