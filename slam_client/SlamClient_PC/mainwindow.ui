@@ -68,7 +68,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QWidget" name="widget_3" native="true"/>
+     <widget class="PlotWidget" name="widget_3" native="true"/>
     </item>
    </layout>
   </widget>
@@ -95,6 +95,12 @@
    <class>CommunicationsWidget</class>
    <extends>QWidget</extends>
    <header>communicationswidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PlotWidget</class>
+   <extends>QWidget</extends>
+   <header>plotwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
