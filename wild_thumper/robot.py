@@ -44,8 +44,8 @@ class Robot:
         self.start_timestamp = datetime.datetime.now().timestamp()
         session_start = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
-        self.motion_file = open('slam_{}_motion.txt'.format(session_start), 'a+')
-        self.scan_file = open('slam_{}_scan.txt'.format(session_start), 'a+')
+        self.motion_file = open('../out/slam_{}_motion.txt'.format(session_start), 'a+')
+        self.scan_file = open('../out/slam_{}_scan.txt'.format(session_start), 'a+')
 
         self.scanning_done = None
         self.status = status_dict
@@ -102,7 +102,7 @@ class Robot:
                 print("Scanner stopped")
         except RuntimeError as e:
             print('Scanner error: ' + str(e))
-            self.client_comm.send(bytes("Scanner error: " + str(e), 'utf-8'))
+            self.client_comm.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e)+ "\"} }" , 'utf-8'))
 
 
     def start_scanner(self, speed, rate):
@@ -127,7 +127,7 @@ class Robot:
 
             # threads used for getting data from the scanner and getting it from the queue
             scanner = Scanner(self.scanner_port, fifo, self.scanning_done)
-            getter = ScanGetter(fifo, self.scan_file)
+            getter = ScanGetter(fifo, self.scan_file, self.client_comm, True)
 
             # start scanning
             scanner.start()
@@ -135,7 +135,7 @@ class Robot:
 
         except RuntimeError as e:
             print('Scanner error: ' + str(e))
-            self.client_comm.send(bytes("Scanner error: " + str(e), 'utf-8'))
+            self.client_comm.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e)+ "\"} }" , 'utf-8'))
 
     def connect(self, address):
         
@@ -149,7 +149,7 @@ class Robot:
         self.client_comm.disconnect()
 
     def send_status(self):
-        self.client_comm.send(bytes(str(self.status), 'utf-8'))
+        self.client_comm.send(bytes("{\"cmd\": \"status\", \"payload\":" + str(self.status) .replace("\'", "\"") + "}", 'utf-8'))
 
 
 
@@ -175,7 +175,7 @@ class ClientCommunication:
         try:  # socket initialization
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.client_address = address
-            self.send(b"Connected")
+            self.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Connected\"}}", 'utf-8'))
             print("Connected to {}".format(self.client_address))
 
         except socket.error as err:
@@ -184,7 +184,7 @@ class ClientCommunication:
     def disconnect(self):
         try:
             print("Disconnecting from {} ...".format(self.client_address))
-            self.send(b"Disconnected")
+            self.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Disconnected\"}}", 'utf-8'))
             self.client_address=None
             self.client_socket.close()
 

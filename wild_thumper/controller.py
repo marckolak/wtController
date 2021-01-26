@@ -35,7 +35,7 @@ def init_socket(host, port):
 
 def init_motor_controllers(mc_left_port, mc_right_port, status_dict):
     try:  # initialize motor controllers
-        status_dict['left_motor'] = 0
+        
         mc_port_l = open_port(mc_left_port)
         mc_port_r = open_port(mc_right_port)
 
@@ -81,6 +81,7 @@ def process_message(data, addr, robot):
         # load json object from message
         message = json.loads(data)
         # get command and payload
+        
         cmd = message['cmd']
         payload = message["payload"]
 
