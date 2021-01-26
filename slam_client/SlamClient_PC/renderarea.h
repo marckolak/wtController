@@ -16,6 +16,8 @@ public:
 
     void zoomOut(void);
 
+
+    void newScan(QJsonObject scan_data);
 protected:
     /**
      * @brief paintEvent called when the widget needs repainting e.g. resize or new localization computed
@@ -62,6 +64,9 @@ private:
 
     std::vector<int> xTicks;
     std::vector<int> yTicks;
+
+    QPointF *scanPoints = new QPointF[3];
+    int scanSize = 0;
 
     void plotAxes(QPainter* p);
 

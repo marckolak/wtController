@@ -15,7 +15,8 @@ SOURCES += \
     motioncontrolwidget.cpp \
     plotwidget.cpp \
     renderarea.cpp \
-    settings.cpp
+    settings.cpp \
+    slamcontrolwidget.cpp
 
 HEADERS += \
     communicationswidget.h \
@@ -23,13 +24,15 @@ HEADERS += \
     motioncontrolwidget.h \
     plotwidget.h \
     renderarea.h \
-    settings.h
+    settings.h \
+    slamcontrolwidget.h
 
 FORMS += \
     communicationswidget.ui \
     mainwindow.ui \
     motioncontrolwidget.ui \
-    plotwidget.ui
+    plotwidget.ui \
+    slamcontrolwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

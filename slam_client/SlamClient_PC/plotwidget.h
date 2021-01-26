@@ -17,6 +17,13 @@ public:
     ~PlotWidget();
 
 
+    /**
+     * @brief processMessage process message received from the Pi controller
+     * @param message json with the message
+     * @param message_type message type
+     */
+    void processMessage(QJsonObject message, QString message_type);
+
 private:
     Ui::PlotWidget *ui;
 
