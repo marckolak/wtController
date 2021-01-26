@@ -1,7 +1,6 @@
 #include "communicationswidget.h"
 #include "ui_communicationswidget.h"
 #include "settings.h"
-#include <QNetworkInterface>
 #include <QJsonObject>
 
 
@@ -65,17 +64,26 @@ void CommunicationsWidget::processMessage(QJsonObject message, QString message_t
     if (message.contains("payload") && message["payload"].isObject())
         payload = message["payload"].toObject();
 
-    if(message_type == "status")
+    if(message_type == "direct_print")
+    {
+        if (payload.contains("text") && payload["text"].isString())
+        {
+            QString text = payload["text"].toString();
+            ui->plainTextEdit->appendPlainText(text);
+        }
+
+    }
+    else if(message_type == "status")
     {
         QString left_motor, right_motor, scanner, start_time;
 
-        if (payload.contains("left_motor") && payload["left_motor"].isObject())
+        if (payload.contains("left_motor") && payload["left_motor"].isString())
             left_motor = payload["left_motor"].toString();
-        if (payload.contains("right_motor") && payload["right_motor"].isObject())
+        if (payload.contains("right_motor") && payload["right_motor"].isString())
             right_motor = payload["right_motor"].toString();
-        if (payload.contains("scanner") && payload["scanner"].isObject())
+        if (payload.contains("scanner") && payload["scanner"].isString())
             scanner = payload["scanner"].toString();
-        if (payload.contains("start_time") && payload["start_time"].isObject())
+        if (payload.contains("start_time") && payload["start_time"].isString())
             start_time = payload["start_time"].toString();
 
         QString statusString = QString("Status: \n"

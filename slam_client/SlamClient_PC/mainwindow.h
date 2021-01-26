@@ -6,6 +6,9 @@
 
 #include "motioncontrolwidget.h"
 #include "communicationswidget.h"
+#include "slamcontrolwidget.h"
+#include "plotwidget.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +28,10 @@ private:
     MotionControlWidget *motionControl;
 
     CommunicationsWidget *communications;
+
+    SlamControlWidget *slamControl;
+
+    PlotWidget *visualization;
 
     //! socket for outgoing communication
     QUdpSocket *socket;

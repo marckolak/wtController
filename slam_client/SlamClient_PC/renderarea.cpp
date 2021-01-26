@@ -8,6 +8,10 @@
 #include <vector>
 #include <math.h>
 
+#include <QJsonObject>
+#include <QJsonArray>
+
+
 RenderArea::RenderArea(QWidget *parent) : QWidget(parent)
 {
     setBackgroundRole(QPalette::Base);
@@ -56,16 +60,17 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 
     double x[9] = {0, 2, -2, 0, 0, 1, 1, -1, -1};
     double y[9] = {0, 0, 0,  2, -2, 1, -1, -1, 1};
-    QPen* penPoint = new QPen(QColor(255,120,120), 10);\
+    QPen* penPoint = new QPen(QColor(114,142,209), 8);\
     p.setPen(*penPoint);
-    for(int i=0; i<9; i++)
-    {
-        double rx = this->rX(x[i]);
-        double ry = this->rY(y[i]);
-        p.drawPoint(rx,ry);
-    }
-}
+//    for(int i=0; i<9; i++)
+//    {
+//        double rx = this->rX(x[i]);
+//        double ry = this->rY(y[i]);
+//        p.drawPoint(rx,ry);
+//    }
 
+    p.drawPoints(this->scanPoints, this->scanSize);
+}
 
 void RenderArea::plotAxes(QPainter* p)
 {
@@ -145,7 +150,6 @@ double RenderArea::rX(double x)
     return xr;
 }
 
-
 double RenderArea::rY(double y)
 {
     double yr = (cY-y)* (rHeight/limY)+ rCenterY;
@@ -163,7 +167,6 @@ double RenderArea::mY(double yr)
     double my = -(yr-rCenterY)*(limY/rHeight) + cY;
     return my;
 }
-
 
 std::vector<int> RenderArea::getTicksX()
 {
@@ -189,4 +192,28 @@ std::vector<int> RenderArea::getTicksY()
         yTicks.push_back(yMin+1 + i);
 
     return yTicks;
+}
+
+void RenderArea::newScan(QJsonObject scan_data)
+{
+    // check if there are scan data in x,y format
+    if (scan_data.contains("x") && scan_data["x"].isArray() && scan_data.contains("y") && scan_data["y"].isArray())
+    {
+        QJsonArray xA =scan_data["x"].toArray();
+        QJsonArray yA =scan_data["y"].toArray();
+
+        // delete previous points and create an array for the new ones
+        delete[] scanPoints;
+        scanPoints = new QPointF[xA.size()];
+
+        for(int i=0; i<xA.size(); i++)
+        {
+            scanPoints[i] = QPointF(rX(-yA[i].toDouble()), rY(xA[i].toDouble()));
+        }
+
+        scanSize = xA.size();
+    }
+
+    this->repaint();
+
 }

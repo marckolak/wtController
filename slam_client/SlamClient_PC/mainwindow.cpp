@@ -14,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     // get pointers to specific widgets
     motionControl = ui->motionWidget;
     communications = ui->communicationsWidget;
+    slamControl = ui->slamControlWidget;
+    visualization = ui->visualizationWidget;
 
     // load settings
     Settings::loadSettings();
@@ -34,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     communications->setSocket(this->socket);
     motionControl->setSocket(this->socket);
+    slamControl->setSocket(this->socket);
 }
 
 MainWindow::~MainWindow()
@@ -59,19 +62,19 @@ void MainWindow::readPendingData()
     rcvSocket->readDatagram(rPacket.data(), rcvSocket->pendingDatagramSize());
     QJsonObject message = QJsonDocument::fromJson(rPacket.data()).object();
 
-    QString command = "";
+    QString messageType = "";
     qDebug()<<rPacket.data();
     // get message type
     if (message.contains("cmd") && message["cmd"].isString())
-        command = message["cmd"].toString();
+        messageType = message["cmd"].toString();
 
     // pass the message to apropriate widget
-    if(command == "status")
+    if(messageType == "status" || messageType == "direct_print")
     {
-        ;
-    }else if(command == "scan")
+        communications->processMessage(message, messageType);
+    }else if(messageType == "scan")
     {
-        ;
+        visualization->processMessage(message, messageType);
     }else
     {
         ;
