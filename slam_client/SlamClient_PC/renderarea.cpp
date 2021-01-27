@@ -70,6 +70,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 //    }
 
     p.drawPoints(this->scanPoints, this->scanSize);
+    this->drawRobot(&p, 0, 0);
 }
 
 void RenderArea::plotAxes(QPainter* p)
@@ -215,5 +216,24 @@ void RenderArea::newScan(QJsonObject scan_data)
     }
 
     this->repaint();
+
+}
+
+void RenderArea::drawRobot(QPainter* p, double x, double y)
+{
+    QRectF robot_rect = QRectF(rX(x-0.065), rY(y+0.05), 0.12*rWidth/limX,0.38*rHeight/limY);
+    QRectF wheels_rect1 = QRectF(rX(x-0.065-0.095), rY(y+0.08), 0.095*rWidth/limX,0.44*rHeight/limY);
+    QRectF wheels_rect2 = QRectF(rX(x+0.055), rY(y+0.08), 0.095*rWidth/limX,0.44*rHeight/limY);
+
+    QPen* penPoint = new QPen(QColor(114,142,0), 2);\
+    p->setPen(*penPoint);
+    p->drawRect(robot_rect);
+
+    QPen* penPoint2 = new QPen(QColor(220,0,0), 2);\
+    p->setPen(*penPoint2);
+
+    p->drawRect(wheels_rect1);
+    p->drawRect(wheels_rect2);
+
 
 }
