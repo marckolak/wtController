@@ -82,6 +82,8 @@ private:
 
     void calcRenderParams();
 
+
+    void drawRobot(QPainter* p,double x, double y);
 signals:
 
 };
