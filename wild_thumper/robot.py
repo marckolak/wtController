@@ -2,14 +2,16 @@
 The robot module contains classes and functions implementing the platform controller.
 """
 import datetime
-import time
 import queue
 import socket
 import threading
+import time
+
 import numpy as np
 from sweeppy import Sweep
 
 from wild_thumper.scanse import Scanner, ScanGetter
+
 
 class Robot:
     """
@@ -78,7 +80,7 @@ class Robot:
             self.motor_right.set_target_speed(0)
 
         # add to history for movement tracking reasons
-        set_time = datetime.datetime.now().timestamp() - self.start_timestamp
+        set_time = datetime.datetime.now().timestamp()  # - self.start_timestamp
         self.motion_history.append([set_time, direction, speed])
         self.motion_file.write('{},{},{}\n'.format(set_time, direction, speed))
         self.motion_file.flush()
@@ -102,8 +104,9 @@ class Robot:
                 print("Scanner stopped")
         except RuntimeError as e:
             print('Scanner error: ' + str(e))
-            self.client_comm.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e)+ "\"} }" , 'utf-8'))
-
+            self.client_comm.send(
+                bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e) + "\"} }",
+                      'utf-8'))
 
     def start_scanner(self, speed, rate):
 
@@ -135,13 +138,15 @@ class Robot:
 
         except RuntimeError as e:
             print('Scanner error: ' + str(e))
-            self.client_comm.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e)+ "\"} }" , 'utf-8'))
+            self.client_comm.send(
+                bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e) + "\"} }",
+                      'utf-8'))
 
     def connect(self, address):
-        
+
         try:  # socket initialization
             self.client_comm.connect(address)
-                       
+
         except socket.error as err:
             print("error")
 
@@ -149,19 +154,19 @@ class Robot:
         self.client_comm.disconnect()
 
     def send_status(self):
-        self.client_comm.send(bytes("{\"cmd\": \"status\", \"payload\":" + str(self.status) .replace("\'", "\"") + "}", 'utf-8'))
-
+        self.client_comm.send(
+            bytes("{\"cmd\": \"status\", \"payload\":" + str(self.status).replace("\'", "\"") + "}", 'utf-8'))
 
 
 class ClientCommunication:
     """
     The ClientCommunication class allows the robot to communicate with the client app (send status and measurement data).
     """
-    
+
     def __init__(self, client_address=None):
         self.client_address = client_address
         self.client_socket = None
-        
+
     def send(self, byte_data):
         try:
             self.client_socket.sendto(byte_data, self.client_address)
@@ -185,11 +190,10 @@ class ClientCommunication:
         try:
             print("Disconnecting from {} ...".format(self.client_address))
             self.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Disconnected\"}}", 'utf-8'))
-            self.client_address=None
+            self.client_address = None
             self.client_socket.close()
 
         except socket.error as err:
             print(err)
         except AttributeError as err:
             print(err)
-        
