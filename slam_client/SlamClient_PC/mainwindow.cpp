@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     communications = ui->communicationsWidget;
     slamControl = ui->slamControlWidget;
     visualization = ui->visualizationWidget;
+    pathPlanning = ui->pathPlanningWidget;
 
     // load settings
     Settings::loadSettings();
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     communications->setSocket(this->socket);
     motionControl->setSocket(this->socket);
     slamControl->setSocket(this->socket);
+    pathPlanning->setSocket(this->socket);
 }
 
 MainWindow::~MainWindow()

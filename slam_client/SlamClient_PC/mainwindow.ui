@@ -22,7 +22,7 @@
         <property name="minimumSize">
          <size>
           <width>460</width>
-          <height>300</height>
+          <height>240</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -38,16 +38,19 @@
         <property name="minimumSize">
          <size>
           <width>460</width>
-          <height>300</height>
+          <height>225</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>460</width>
-          <height>300</height>
+          <height>225</height>
          </size>
         </property>
        </widget>
+      </item>
+      <item>
+       <widget class="PathPlanningWidget" name="pathPlanningWidget" native="true"/>
       </item>
       <item>
        <widget class="SlamControlWidget" name="slamControlWidget" native="true"/>
@@ -94,6 +97,12 @@
    <class>SlamControlWidget</class>
    <extends>QWidget</extends>
    <header>slamcontrolwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PathPlanningWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">pathplanningwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

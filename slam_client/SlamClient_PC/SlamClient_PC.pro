@@ -13,6 +13,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     motioncontrolwidget.cpp \
+    pathplanningwidget.cpp \
     plotwidget.cpp \
     renderarea.cpp \
     settings.cpp \
@@ -22,6 +23,7 @@ HEADERS += \
     communicationswidget.h \
     mainwindow.h \
     motioncontrolwidget.h \
+    pathplanningwidget.h \
     plotwidget.h \
     renderarea.h \
     settings.h \
@@ -31,6 +33,7 @@ FORMS += \
     communicationswidget.ui \
     mainwindow.ui \
     motioncontrolwidget.ui \
+    pathplanningwidget.ui \
     plotwidget.ui \
     slamcontrolwidget.ui
 

@@ -93,6 +93,9 @@ def process_message(data, addr, robot):
         elif cmd == 'scan':  # start/stop LiDAR scanning
             robot.process_scan_message(payload)
 
+        elif cmd == 'planned_path':  # start/stop LiDAR scanning
+            robot.execute_path(payload)
+
         elif cmd == 'connect':  # start sending data to a client
             robot.connect((addr[0], payload['port']))
 

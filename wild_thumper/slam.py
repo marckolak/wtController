@@ -26,6 +26,27 @@ def scan2xy(scan, x0=np.array([0, 0])):
     return np.c_[x, y] + x0
 
 
+def rotate_scan(scan, angle):
+    """Rotate a set of points in [x,y] format
+
+    Parameters
+    ----------
+    scan: ndarray
+        set of points (x,y) constituting the scan
+    angle: float
+        rotation angle in radians
+
+    Returns
+    -------
+    scan_r: ndarray
+        rotated points
+    """
+    scan_r = np.c_[scan[:, 0] * np.cos(angle) - scan[:, 1] * np.sin(angle),
+                   scan[:, 0] * np.sin(angle) + scan[:, 1] * np.cos(angle)]
+
+    return scan_r
+
+
 def load_motion_file(filepath):
     """
 
@@ -53,8 +74,8 @@ def load_motion_file(filepath):
 
     return mot
 
-def load_scans(filepath, d_limit=(0.2, 15), min_size=50):
 
+def load_scans(filepath, d_limit=(0.2, 15), min_size=50):
     # read scan file
     with open('slam_2021_01_27_17_54_31_scan.txt', 'r') as f:
         file = f.read()
@@ -89,13 +110,13 @@ def load_scans(filepath, d_limit=(0.2, 15), min_size=50):
     return scans, np.array(scan_ts)
 
 
-def extract_lines(s, angles, angle_dist=np.pi/6, split_th=0.05,  min_len=0.2, min_points=5):
+def extract_lines(s, angles, angle_dist=np.pi / 6, split_th=0.05, min_len=0.2, min_points=5):
     lines = []
     line_points = []
 
     for i1 in np.arange(0, 2 * np.pi, angle_dist):
         i2 = (i1 + angle_dist)
-        ix = np.argwhere((i1 <= angles) & (angles < i2))
+        ix = np.argwhere((i1 < angles) & (angles < i2))
         p = s[ix.T[0]]
         polys, points = split_into_lines(p, split_th, min_len, min_points)
         lines += polys
@@ -104,7 +125,7 @@ def extract_lines(s, angles, angle_dist=np.pi/6, split_th=0.05,  min_len=0.2, mi
     return np.array(lines), line_points
 
 
-def merge_lines(segments, line_points, max_dist, coeff_tol):
+def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
     end_pts = []
     for i in range(len(line_points)):
         end_pts.append(np.c_[line_points[i][0], line_points[i][-1]].T)
@@ -118,18 +139,19 @@ def merge_lines(segments, line_points, max_dist, coeff_tol):
     to_merge = []
     same_line = []
     merging = False
-    while i < len(lines) - 1:
+    angles = np.arctan2(lines[:, 0], np.ones(lines[:, 0].shape))
+    while i < len(lines):
 
         # print('dist: ', np.linalg.norm(end_pts[i,1] - end_pts[i+1,0]), 'coeff dist: ', np.abs(lines[i]-lines[i+1]))
 
         # check if the points are mergable
-        if np.linalg.norm(end_pts[i, 1] - end_pts[i + 1, 0]) < max_dist and (
-                np.abs(lines[i] - lines[i + 1]) < coeff_tol).all():
+        if np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % 1, 0]) < max_dist and np.abs(
+                angles[i] - angles[i]) < a_tol and np.abs(lines[i, 1] - lines[(i + 1) % 1, 1]) < b_tol:
 
             if merging:  # if already merging append next index to list
-                same_line.append(i + 1)
+                same_line.append((i + 1) % 1)
             else:  # if not merging start a new list
-                same_line = [i, i + 1]
+                same_line = [i, (i + 1) % 1]
                 merging = True
 
             i = i + 1  # check the next segment
@@ -165,6 +187,8 @@ def merge_lines(segments, line_points, max_dist, coeff_tol):
 
 
 def split_into_lines(p, split_th, min_len, min_points):
+    if p.shape[0] < min_points:
+        return [], []
     # get line params between two edge points
     pol = pair2line(p[0], p[-1])
 
@@ -185,7 +209,7 @@ def split_into_lines(p, split_th, min_len, min_points):
 
         return pol, pout
 
-    else: # if no distinct split point - segment is whole
+    else:  # if no distinct split point - segment is whole
         if np.linalg.norm(p[0] - p[-1]) > min_len and p.shape[0] > min_points:
             return [pol], [p]
         else:
@@ -230,26 +254,35 @@ def pair2line(p1, p2):
 
 
 def closest_point(xy, p):
-    x = (xy[0] + p[0]*xy[0] - p[0]*p[1])/(p[0]**2+1)
-    y = (p[0]*(xy[0] + p[0]*xy[0]) + p[1])/(p[0]**2+1)
-    return np.r_[x,y]
+    x = (xy[0] + p[0] * xy[0] - p[0] * p[1]) / (p[0] ** 2 + 1)
+    y = (p[0] * (xy[0] + p[0] * xy[0]) + p[1]) / (p[0] ** 2 + 1)
+    return np.r_[x, y]
 
 
-def get_constraint(t1, t0, motion, LIN_SPEED, ROT_SPEED_LEFT, ROT_SPEED_RIGHT, h0=0):
+def closest_point_on_line(p, xy):
+    x = (xy[0] + p[0] * xy[1] - p[0] * p[1]) / (p[0] ** 2 + 1)
+    y = (p[0] * (xy[0] + p[0] * xy[1]) + p[1]) / (p[0] ** 2 + 1)
+    return np.r_[x, y]
+
+
+def get_constraint(t1, t0, motion, LIN_SPEED, ROT_SPEED_LEFT, ROT_SPEED_RIGHT, h0=0, control_format=False):
     mot = motion[(motion.ts > t0) & (motion.ts < t1)].reset_index()
 
     h = h0
     x = np.r_[0, 0, 0].astype('float')
     i = 0
-
     for i, r in mot.iterrows():
         ts_start = np.maximum(r['ts_start'], t0)
         ts_end = np.minimum(r['ts_end'], t1)
 
         dt = ts_end - ts_start
+
         direction = r.dir
 
-        uv = np.r_[np.cos(h), np.sin(h)]
+        if control_format:
+            uv = np.r_[1.0, 0.0]
+        else:
+            uv = np.r_[np.cos(h), np.sin(h)]
 
         if direction == 'forward':
             x[:2] += uv * dt * LIN_SPEED
@@ -266,3 +299,47 @@ def get_constraint(t1, t0, motion, LIN_SPEED, ROT_SPEED_LEFT, ROT_SPEED_RIGHT, h
             h += - dt * ROT_SPEED_RIGHT
 
     return x
+
+
+def get_controls(t1, t0, motion, LIN_SPEED, ROT_SPEED_LEFT, ROT_SPEED_RIGHT, h0=0, control_format=False):
+    mot = motion[(motion.ts_end >= t0) & (motion.ts_start <= t1)].reset_index()
+
+    h = h0
+    u = np.r_[0, 0].astype('float')
+    i = 0
+    for i, r in mot.iterrows():
+        ts_start = np.maximum(r['ts_start'], t0)
+        ts_end = np.minimum(r['ts_end'], t1)
+
+        dt = ts_end - ts_start
+
+        direction = r.dir
+
+        if direction == 'forward':
+            u[0] += dt * LIN_SPEED
+
+        if direction == 'reverse':
+            u[0] += -dt * LIN_SPEED
+
+        if direction == 'left':
+            u[1] += dt * ROT_SPEED_LEFT
+            h += dt * ROT_SPEED_LEFT
+
+        if direction == 'right':
+            u[1] -= dt * ROT_SPEED_RIGHT
+            h -= dt * ROT_SPEED_RIGHT
+
+    return u
+
+
+def rotate_line(p, theta, t):
+    x = np.array([0, 1])
+    y = np.polyval(p, x)
+
+    t = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]).dot(t)
+
+    xy = rotate_scan(np.c_[x, y], theta) + t
+
+    pr = pair2line(xy[0], xy[1])
+
+    return pr

@@ -8,7 +8,7 @@
 #include "communicationswidget.h"
 #include "slamcontrolwidget.h"
 #include "plotwidget.h"
-
+#include "pathplanningwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -32,6 +32,8 @@ private:
     SlamControlWidget *slamControl;
 
     PlotWidget *visualization;
+
+    PathPlanningWidget *pathPlanning;
 
     //! socket for outgoing communication
     QUdpSocket *socket;
