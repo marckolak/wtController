@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>460</width>
-    <height>300</height>
+    <height>225</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,12 +19,12 @@
      <x>20</x>
      <y>10</y>
      <width>420</width>
-     <height>280</height>
+     <height>201</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <pointsize>12</pointsize>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="title">
@@ -40,20 +40,20 @@
        <widget class="QPushButton" name="downButton">
         <property name="minimumSize">
          <size>
-          <width>64</width>
-          <height>64</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>80</width>
-          <height>80</height>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
          <font>
           <family>Consolas</family>
-          <pointsize>48</pointsize>
+          <pointsize>30</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -67,20 +67,20 @@
        <widget class="QPushButton" name="leftButton">
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>80</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>80</width>
-          <height>80</height>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
          <font>
           <family>Consolas</family>
-          <pointsize>48</pointsize>
+          <pointsize>30</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
@@ -94,20 +94,20 @@
        <widget class="QPushButton" name="upButton">
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>80</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>80</width>
-          <height>80</height>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
          <font>
           <family>Consolas</family>
-          <pointsize>48</pointsize>
+          <pointsize>30</pointsize>
           <weight>50</weight>
           <italic>false</italic>
           <bold>false</bold>
@@ -125,37 +125,26 @@
        <widget class="QPushButton" name="rightButton">
         <property name="minimumSize">
          <size>
-          <width>0</width>
-          <height>80</height>
+          <width>40</width>
+          <height>40</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>80</width>
-          <height>80</height>
+          <height>40</height>
          </size>
         </property>
         <property name="font">
          <font>
           <family>Consolas</family>
-          <pointsize>48</pointsize>
+          <pointsize>30</pointsize>
           <weight>50</weight>
           <bold>false</bold>
          </font>
         </property>
         <property name="text">
          <string>→</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="keyboardCheckBox">
-        <property name="text">
-         <string>Keyboard
-control</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -173,7 +162,7 @@ control</string>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
@@ -191,11 +180,26 @@ control</string>
         </property>
         <property name="font">
          <font>
-          <pointsize>12</pointsize>
+          <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
          <string>0.0</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="keyboardCheckBox">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Keyboard control</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
