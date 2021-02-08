@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDebug>
 
 QString Settings::host = "192.168.0.200";
 
