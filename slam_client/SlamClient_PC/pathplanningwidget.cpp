@@ -69,7 +69,7 @@ void PathPlanningWidget::onAddSegment()
 void PathPlanningWidget::onExecutePath()
 {
 
-    QString message = QString("{\"cmd\": \"move\","
+    QString message = QString("{\"cmd\": \"planned_path\","
                         "\"payload\": {"
                                 "\"stop_time\": %1, "
                                 "\"path\": [ ").arg(2);
