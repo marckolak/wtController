@@ -79,6 +79,8 @@ private slots:
     void onAddSegment();
 
     void onExecutePath();
+
+    void onLoadFile();
 };
 
 

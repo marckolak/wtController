@@ -142,11 +142,11 @@ def main():
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port, status_dict)  # initialize motors
         init_scanner(scanner_port)  # initialize scanner
 
-        # create robot instace
+        # create robot instance
         robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port, status_dict=status_dict)
 
         # MAIN LOOP
-        # wait for uncoming packets
+        # wait for upcoming packets
         while True:  
             print("Awaiting data...")
             
@@ -164,7 +164,7 @@ def main():
                 print("Socket error: ", err)
                 print(type(err))
 
-    except ControllerInitError as e:  # in case of a serious error, without which it is not worth it to start the platform
+    except ControllerInitError as e:  # in case of a serious error, with which it is not worth it to start the platform
         print(e)
         print("Closing the controller application...")
 

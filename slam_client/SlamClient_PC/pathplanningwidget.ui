@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>460</width>
-    <height>240</height>
+    <height>427</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -19,7 +19,7 @@
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>240</height>
+    <height>350</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -30,12 +30,17 @@
     <rect>
      <x>20</x>
      <y>10</y>
-     <width>420</width>
+     <width>421</width>
      <height>225</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
    <property name="title">
-    <string>GroupBox</string>
+    <string>Path planning</string>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -46,10 +51,36 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
-      <property name="leftMargin">
-       <number>10</number>
+     <widget class="QPushButton" name="executeButton">
+      <property name="text">
+       <string>Execute</string>
       </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>240</y>
+     <width>414</width>
+     <height>53</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,0,0,0,0">
+    <property name="leftMargin">
+     <number>10</number>
+    </property>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Direction:</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QComboBox" name="dirBox">
         <item>
@@ -74,6 +105,17 @@
         </item>
        </widget>
       </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Speed: </string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QDoubleSpinBox" name="speedSpinBox">
         <property name="suffix">
@@ -93,6 +135,17 @@
         </property>
        </widget>
       </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Time: </string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QDoubleSpinBox" name="timeSpinBox">
         <property name="suffix">
@@ -103,21 +156,57 @@
         </property>
        </widget>
       </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QPushButton" name="addButton">
+       <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Add</string>
+         <string>Wait:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="executeButton">
-        <property name="text">
-         <string>Execute</string>
+       <widget class="QDoubleSpinBox" name="waitSpinBox">
+        <property name="suffix">
+         <string> s</string>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="addButton">
+      <property name="text">
+       <string>Add</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>300</y>
+     <width>411</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QLineEdit" name="lineEdit"/>
+    </item>
+    <item>
+     <widget class="QPushButton" name="loadPathButton">
+      <property name="text">
+       <string>Load Path</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -156,9 +245,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>loadPathButton</sender>
+   <signal>clicked()</signal>
+   <receiver>PathPlanningWidget</receiver>
+   <slot>onLoadFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>389</x>
+     <y>339</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>229</x>
+     <y>213</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onAddSegment()</slot>
   <slot>onExecutePath()</slot>
+  <slot>onLoadFile()</slot>
  </slots>
 </ui>
