@@ -38,10 +38,12 @@ PathPlanningWidget::PathPlanningWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // set pointers to ui elements
     segmentList = ui->motionList;
     dirCombo = ui->dirBox;
     speedSpin = ui->speedSpinBox;
     timeSpin = ui->timeSpinBox;
+    waitSpin = ui->waitSpinBox;
 }
 
 PathPlanningWidget::~PathPlanningWidget()
@@ -69,16 +71,17 @@ void PathPlanningWidget::onAddSegment()
 
 void PathPlanningWidget::onExecutePath()
 {
-
+    // message template
     QString message = QString("{\"cmd\": \"planned_path\","
                               "\"payload\": {"
                               "\"stop_time\": %1, "
-                              "\"path\": [ ").arg(2);
+                              "\"path\": [ ").arg(waitSpin->value());
 
+    // append path segment jsons
     if(segments.size() >0)
     {
         message += segments[0].toJson();
-        for(unsigned int i=0; i<segments.size(); i++)
+        for(unsigned int i=1; i<segments.size(); i++)
         {
             message += ",";
             message += segments[i].toJson();
@@ -87,33 +90,37 @@ void PathPlanningWidget::onExecutePath()
     }
     message += "]}}";
 
-    qDebug() << message;
-
+    // send to the robot
     socket->writeDatagram(message.toLocal8Bit(), message.size(), QHostAddress(Settings::host), Settings::port);
+
+    qDebug() << message;
 
 }
 
 
 void PathPlanningWidget::onLoadFile()
 {
-    QString filepath = QFileDialog::getOpenFileName(this, tr("OutputFile"),
+    // get path to file with defined robot path
+    QString filepath = QFileDialog::getOpenFileName(this, tr("Path File"),
                                                     "",
                                                     tr("Path File(*.csv)"));
 
+    // display filename
     ui->lineEdit->setText(filepath);
 
-
+    //read file
     QFile file(filepath);
     if (!file.open(QIODevice::ReadOnly)) {
         qDebug() << file.errorString();
         return;
     }
 
+    // read line by line
     while (!file.atEnd()) {
-        QString line = file.readLine();
+        QString line = file.readLine().replace("\n", "");
         QStringList wordlist = line.split(",");
 
-
+        // add segments to vector and list
         segments.push_back(PathSegment(wordlist.at(0), wordlist.at(1).toDouble(), wordlist.at(2).toDouble()));
 
         this->items.push_back(new QListWidgetItem(this->listTemplate.arg(wordlist.at(0))
@@ -122,12 +129,15 @@ void PathPlanningWidget::onLoadFile()
 
         segmentList->addItem(items[items.size()-1]);
 
-
-        qDebug() << wordlist;
-
     }
-
-
 
 }
 
+
+void  PathPlanningWidget::onClear()
+{
+    // clear vector and list of all segments
+    segments.clear();
+    segmentList->clear();
+
+}
