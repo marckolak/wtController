@@ -59,14 +59,14 @@ def load_motion_file(filepath):
 
     """
 
-    start_time = datetime.datetime.strptime('2021-01-27 17:54:31.00', '%Y-%m-%d %H:%M:%S.%f').timestamp() + 1
+    # start_time = datetime.datetime.strptime('2021-01-27 17:54:31.00', '%Y-%m-%d %H:%M:%S.%f').timestamp() + 1
 
     # get motion history
-    mot = pd.read_csv('slam_2021_01_27_17_54_31_motion.txt', names=['ts', 'dir', 'speed']).iloc[1:].reset_index(
+    mot = pd.read_csv(filepath, names=['ts', 'dir', 'speed']).iloc[1:].reset_index(
         drop=True)
 
-    mot['ts'] = mot['ts'] + start_time  # normalize the timestamp to the start_time
-    mot = pd.concat([pd.DataFrame({'ts': [start_time], 'dir': ['stop']}), mot],
+    # mot['ts'] = mot['ts']  # normalize the timestamp to the start_time
+    mot = pd.concat([pd.DataFrame({'ts': mot['ts'].min()-500, 'dir': ['stop']}), mot],
                     ignore_index=True)  # add stop at the beggining
 
     mot['ts_start'] = mot['ts']
@@ -77,7 +77,7 @@ def load_motion_file(filepath):
 
 def load_scans(filepath, d_limit=(0.2, 15), min_size=50):
     # read scan file
-    with open('slam_2021_01_27_17_54_31_scan.txt', 'r') as f:
+    with open(filepath, 'r') as f:
         file = f.read()
 
     # search for individual scans {ts, angles [], dists []} using regex
@@ -133,25 +133,28 @@ def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
     end_pts = np.array(end_pts)
 
     lines = segments.copy()
-    lines[:, 0] = np.abs(lines[:, 0])
-
+    # lines[:, 0] = np.abs(lines[:, 0])
+    # print(lines)
     i = 0
     to_merge = []
     same_line = []
     merging = False
     angles = np.arctan2(lines[:, 0], np.ones(lines[:, 0].shape))
+    # print(angles)
     while i < len(lines):
 
         # print('dist: ', np.linalg.norm(end_pts[i,1] - end_pts[i+1,0]), 'coeff dist: ', np.abs(lines[i]-lines[i+1]))
 
         # check if the points are mergable
-        if np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % 1, 0]) < max_dist and np.abs(
-                angles[i] - angles[i]) < a_tol and np.abs(lines[i, 1] - lines[(i + 1) % 1, 1]) < b_tol:
+        # print(np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % 1, 0]), np.abs(
+        #         angles[i] - angles[(i + 1) % len(lines)]), lines[i, 1] - lines[(i + 1) % len(lines), 1])
+        if np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % len(lines), 0]) < max_dist and np.abs(
+                angles[i] - angles[(i + 1) % len(lines)]) < a_tol and np.abs(lines[i, 1] - lines[(i + 1) % len(lines), 1]) < b_tol:
 
             if merging:  # if already merging append next index to list
-                same_line.append((i + 1) % 1)
+                same_line.append((i + 1) % len(lines))
             else:  # if not merging start a new list
-                same_line = [i, (i + 1) % 1]
+                same_line = [i, (i + 1) % len(lines)]
                 merging = True
 
             i = i + 1  # check the next segment
@@ -163,7 +166,7 @@ def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
                 # do not increment - check for the same index if its mergable with the next segment
             else:
                 i = i + 1
-
+    # print(to_merge)
     # merge lines:
     lines_am = []
     points_am = []

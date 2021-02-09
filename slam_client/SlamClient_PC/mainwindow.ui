@@ -50,7 +50,14 @@
        </widget>
       </item>
       <item>
-       <widget class="PathPlanningWidget" name="pathPlanningWidget" native="true"/>
+       <widget class="PathPlanningWidget" name="pathPlanningWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="SlamControlWidget" name="slamControlWidget" native="true">
@@ -75,7 +82,7 @@
      <x>0</x>
      <y>0</y>
      <width>942</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
