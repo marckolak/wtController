@@ -1,4 +1,3 @@
-import datetime
 import re
 
 import numpy as np
@@ -66,7 +65,7 @@ def load_motion_file(filepath):
         drop=True)
 
     # mot['ts'] = mot['ts']  # normalize the timestamp to the start_time
-    mot = pd.concat([pd.DataFrame({'ts': mot['ts'].min()-500, 'dir': ['stop']}), mot],
+    mot = pd.concat([pd.DataFrame({'ts': mot['ts'].min() - 500, 'dir': ['stop']}), mot],
                     ignore_index=True)  # add stop at the beggining
 
     mot['ts_start'] = mot['ts']
@@ -125,36 +124,41 @@ def extract_lines(s, angles, angle_dist=np.pi / 6, split_th=0.05, min_len=0.2, m
     return np.array(lines), line_points
 
 
-def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
+def merge_lines(segments, line_points, max_dist, a_tol, b_tol, a_as_angle=False):
     end_pts = []
     for i in range(len(line_points)):
         end_pts.append(np.c_[line_points[i][0], line_points[i][-1]].T)
 
     end_pts = np.array(end_pts)
 
-    lines = segments.copy()
     # lines[:, 0] = np.abs(lines[:, 0])
     # print(lines)
     i = 0
     to_merge = []
     same_line = []
     merging = False
-    angles = np.arctan2(lines[:, 0], np.ones(lines[:, 0].shape))
+
+    angles = np.arctan2(segments[:, 0], np.ones(segments[:, 0].shape))
+    if a_as_angle:
+        segments[:, 0] = angles
+        print(segments[:,0])
+
     # print(angles)
-    while i < len(lines):
+    while i < len(segments):
 
         # print('dist: ', np.linalg.norm(end_pts[i,1] - end_pts[i+1,0]), 'coeff dist: ', np.abs(lines[i]-lines[i+1]))
 
         # check if the points are mergable
         # print(np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % 1, 0]), np.abs(
         #         angles[i] - angles[(i + 1) % len(lines)]), lines[i, 1] - lines[(i + 1) % len(lines), 1])
-        if np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % len(lines), 0]) < max_dist and np.abs(
-                angles[i] - angles[(i + 1) % len(lines)]) < a_tol and np.abs(lines[i, 1] - lines[(i + 1) % len(lines), 1]) < b_tol:
+        if np.linalg.norm(end_pts[i, 1] - end_pts[(i + 1) % len(segments), 0]) < max_dist and np.abs(
+                angles[i] - angles[(i + 1) % len(segments)]) < a_tol and np.abs(
+            segments[i, 1] - segments[(i + 1) % len(segments), 1]) < b_tol:
 
             if merging:  # if already merging append next index to list
-                same_line.append((i + 1) % len(lines))
+                same_line.append((i + 1) % len(segments))
             else:  # if not merging start a new list
-                same_line = [i, (i + 1) % len(lines)]
+                same_line = [i, (i + 1) % len(segments)]
                 merging = True
 
             i = i + 1  # check the next segment
@@ -172,8 +176,12 @@ def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
     points_am = []
     for m in to_merge:
         pm = np.vstack([line_points[i] for i in m])
+        p = np.polyfit(pm[:, 0], pm[:, 1], 1)
+        if a_as_angle:
+            p = np.r_[np.arctan2(p[0], 1), p[1]]
+            print(p)
         points_am.append(pm)
-        lines_am.append(np.polyfit(pm[:, 0], pm[:, 1], 1))
+        lines_am.append(p)
 
     # get indices of segments, which were merged
     merge_ind = []
@@ -186,14 +194,14 @@ def merge_lines(segments, line_points, max_dist, a_tol, b_tol):
             lines_am.append(segments[i])
             points_am.append(line_points[i])
 
-    return lines_am, points_am
+    return np.vstack(lines_am), points_am
 
 
 def split_into_lines(p, split_th, min_len, min_points):
     if p.shape[0] < min_points:
         return [], []
     # get line params between two edge points
-    pol = pair2line(p[0], p[-1])
+    pol = pair2line(p[0], p[-1], a_as_angle=False)
 
     # calculate distance
     d = dist_from_line(p, pol)
@@ -234,11 +242,32 @@ def dist_from_line(xy, sl_in):
     d: ndarray
         distances of points from xy from the line
     """
+    if xy.ndim >=2:
+        return np.abs(xy[:, 0] * sl_in[0] - xy[:, 1] + sl_in[1]) / np.sqrt(1 + sl_in[0] ** 2)
+    else:
+        return np.abs(xy[0] * sl_in[0] - xy[1] + sl_in[1]) / np.sqrt(1 + sl_in[0] ** 2)
 
-    return np.abs(xy[:, 0] * sl_in[0] - xy[:, 1] + sl_in[1]) / np.sqrt(1 + sl_in[0] ** 2)
+
+def dist_from_lines(xy, lines):
+    """ Calculate distance from a line
+
+    Parameters
+    ----------
+    xy: ndarray
+        point coordinates
+    sl_in: ndarray
+        slope and intercept of the line
+
+    Returns
+    -------
+    d: ndarray
+        distances of points from xy from the line
+    """
+
+    return np.abs(xy[0] * lines[:,0] - xy[1] + lines[:,1]) / np.sqrt(1 + lines[:,0] ** 2)
 
 
-def pair2line(p1, p2):
+def pair2line(p1, p2, a_as_angle=False):
     """
 
     Parameters
@@ -250,8 +279,15 @@ def pair2line(p1, p2):
     -------
 
     """
+    if p2[0] == p1[0]:
+        p2[0] += 0.0001
+        p1[0] -= 0.0001
+
     a = (p2[1] - p1[1]) / (p2[0] - p1[0])
     b = p1[1] - a * p1[0]
+
+    if a_as_angle:
+        a = np.arctan2(p2[1] - p1[1], p2[0] - p1[0])
 
     return np.array((a, b))
 
@@ -263,9 +299,9 @@ def closest_point(xy, p):
 
 
 def closest_point_on_line(p, xy):
-    x = (xy[0] + p[0] * xy[1] - p[0] * p[1]) / (p[0] ** 2 + 1)
-    y = (p[0] * (xy[0] + p[0] * xy[1]) + p[1]) / (p[0] ** 2 + 1)
-    return np.r_[x, y]
+    x = (xy[0] + p[:, 0] * xy[1] - p[:,0] * p[:,1]) / (p[:,0] ** 2 + 1)
+    y = (p[:,0] * (xy[0] + p[:,0] * xy[1]) + p[:,1]) / (p[:,0] ** 2 + 1)
+    return np.c_[x, y]
 
 
 def get_constraint(t1, t0, motion, LIN_SPEED, ROT_SPEED_LEFT, ROT_SPEED_RIGHT, h0=0, control_format=False):
@@ -339,10 +375,75 @@ def rotate_line(p, theta, t):
     x = np.array([0, 1])
     y = np.polyval(p, x)
 
-    t = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]).dot(t)
+    # t = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]).dot(t)
 
     xy = rotate_scan(np.c_[x, y], theta) + t
 
     pr = pair2line(xy[0], xy[1])
 
     return pr
+
+
+def bearing_range_model(x, i):
+    x_pose = x[:3]
+    landmark = x[3:].reshape(-1, 2)[i]
+    d = dist_from_line(x[:2], landmark)
+    cp = closest_point_on_line(landmark.reshape(-1, 2), np.r_[0, 0])[0]
+    bearing = np.arctan2(cp[1], cp[0]) - x[2]
+
+    return np.array([bearing, d])
+
+
+def bearing_range(x, lines):
+    x_pose = x[:3]
+
+    r = dist_from_lines(x[:2], lines)
+    cp = closest_point_on_line(lines, np.r_[0, 0])
+    bearing = np.arctan2(cp[:, 1], cp[:, 0])
+
+    #     print(bearing, r)
+    return np.c_[bearing, r]
+
+
+def select_static_scans(mot, scans, scans_ts):
+    # bin scans accorrding to timestamps of motion actions
+    mot_bins = mot.ts.values
+    mot_bin_names = mot.dir.values.astype('str')
+    scan_bins = pd.cut(np.array(scans_ts), bins=mot_bins, retbins=False)  # , labels=mot_bin_names[:-1],)
+    scan_bins_labels = pd.cut(np.array(scans_ts), bins=mot_bins, retbins=False, labels=mot_bin_names[:-1],
+                              ordered=False)
+
+    # prepare lists for median scans
+    med_ts, med_labels, med_scans = ([] for i in range(3))
+
+    for c, label in zip(scan_bins.categories, scan_bins_labels): # group scans by bin
+
+        si = np.argwhere(scan_bins == c)
+        if si.size:
+            if si.size > 1:
+                t = np.min(scans_ts[si])
+            else:
+                t = (scans_ts[si[0][0]])
+
+            med_ts.append(t)
+            med_labels.append(label)
+
+            if si.size > 1:
+                scan_full = [scans[i[0]] for i in si]
+                scan_full = scan_full[1:]
+            else:
+                scan_full = scans[si[0][0]]
+
+            scan_full = pd.DataFrame(np.vstack(scan_full), columns=['a', 'd'])
+            med_sda = scan_full.groupby('a').min().reset_index()
+            med_scans.append(np.c_[scan2xy(scan_full.groupby('a').median().reset_index().values), med_sda['a'].values])
+
+    med_ts = np.array(med_ts)
+
+    med_labels = pd.cut(np.array(med_ts), bins=mot_bins, retbins=False, ordered=False, labels=mot_bin_names[:-1])
+    med_labels = np.array(med_labels.tolist())
+
+    scans_static = [med_scans[i] for i in np.argwhere((med_labels == 'stop')).T[0]]
+    scans_static_ts = [med_ts[i] for i in np.argwhere((med_labels == 'stop')).T[0]]
+
+    return scans_static, scans_static_ts
