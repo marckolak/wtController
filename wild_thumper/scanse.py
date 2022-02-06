@@ -6,7 +6,7 @@ import numpy as np
 import datetime
 import time
 from sweeppy import Sweep
-
+from wild_thumper.slam import scan2xy
 
 class Scanner(threading.Thread):
     """
@@ -54,11 +54,13 @@ class ScanGetter(threading.Thread):
     ScanGetter extracts scans from the referenced queue.
     """
 
-    def __init__(self, queue, scan_file):
+    def __init__(self, queue, scan_file,client_comm, send_scans):
         super().__init__()
         self.queue = queue
         self.scans = []
         self.scan_file = scan_file
+        self.client_comm = client_comm
+        self.send_scans = send_scans
 
     def run(self):
         """
@@ -76,6 +78,12 @@ class ScanGetter(threading.Thread):
             self.scan_file.write(np.array_str(a) + '\n')
             self.scan_file.write(np.array_str(d) + '\n')
             self.scan_file.flush()
+
+            if self.send_scans:
+                xy = np.around(scan2xy(np.c_[np.radians(a/1000), d/100]),2)
+
+                message = "{\"cmd\":\"scan\", \"payload\":{\"x\": " + str(xy[:,0].tolist()) + ",\"y\": " +  str(xy[:,1].tolist()) +"} }"
+                self.client_comm.send(bytes(message, 'utf-8'))
 
             self.queue.task_done()
 

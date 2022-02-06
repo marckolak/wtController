@@ -95,5 +95,21 @@ In order to start or stop LiDAR operation the client must send a message with sc
 }
 \end{lstlisting}
 
+\section{Responses}
+
+\subsection{Scan measurement data}
+When starting the LiDAR the client might ask to send data. After each of the scans the data will be sent to the client in the following format:
+
+\vspace{6pt}
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+	"cmd": "scan",
+  	"payload": {
+  		"timestamp": number,
+		"x": array,
+		"y": array
+  	}
+}
+\end{lstlisting}
 
 \end{document}

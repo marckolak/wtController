@@ -7,3 +7,6 @@ The platform robot contains of:
 * Raspberry Pi 4
 * two Pololu High-Power Simple Motor Controllers G2 18v15
 * Scanse Sweep LiDAR
+
+The SLAM methods are being developed in the marckolak/graphSLAM repo.
+https://github.com/marckolak/graphSLAM/

@@ -35,7 +35,7 @@ def init_socket(host, port):
 
 def init_motor_controllers(mc_left_port, mc_right_port, status_dict):
     try:  # initialize motor controllers
-        status_dict['left_motor'] = 0
+        
         mc_port_l = open_port(mc_left_port)
         mc_port_r = open_port(mc_right_port)
 
@@ -81,6 +81,7 @@ def process_message(data, addr, robot):
         # load json object from message
         message = json.loads(data)
         # get command and payload
+        
         cmd = message['cmd']
         payload = message["payload"]
 
@@ -91,6 +92,9 @@ def process_message(data, addr, robot):
 
         elif cmd == 'scan':  # start/stop LiDAR scanning
             robot.process_scan_message(payload)
+
+        elif cmd == 'planned_path':  # start/stop LiDAR scanning
+            robot.execute_path(payload)
 
         elif cmd == 'connect':  # start sending data to a client
             robot.connect((addr[0], payload['port']))
@@ -138,11 +142,11 @@ def main():
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port, status_dict)  # initialize motors
         init_scanner(scanner_port)  # initialize scanner
 
-        # create robot instace
+        # create robot instance
         robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port, status_dict=status_dict)
 
         # MAIN LOOP
-        # wait for uncoming packets
+        # wait for upcoming packets
         while True:  
             print("Awaiting data...")
             
@@ -160,7 +164,7 @@ def main():
                 print("Socket error: ", err)
                 print(type(err))
 
-    except ControllerInitError as e:  # in case of a serious error, without which it is not worth it to start the platform
+    except ControllerInitError as e:  # in case of a serious error, with which it is not worth it to start the platform
         print(e)
         print("Closing the controller application...")
 
