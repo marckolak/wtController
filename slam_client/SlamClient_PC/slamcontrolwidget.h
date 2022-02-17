@@ -31,7 +31,17 @@ public:
 
 
 private slots:
+    /**
+     * @brief onStartScanning Called when start/stop scanning button is clicked
+     * @param toggled button state
+     */
     void onStartScanning(bool toggled);
+
+    /**
+     * @brief Called when start/stop CIR collection button is clicked
+     * @param toggled button state
+     */
+    void onStartCirCollection(bool toggled);
 };
 
 #endif // SLAMCONTROLWIDGET_H

@@ -51,3 +51,31 @@ void SlamControlWidget::onStartScanning(bool toggled)
     }
 
 }
+
+void SlamControlWidget::onStartCirCollection(bool toggled)
+{
+    if(toggled)
+    {
+        QByteArray message = QString("{\"cmd\": \"cir\","
+                                       "\"payload\": {"
+                                            "\"action\": %1,"
+                                            " \"send_stats\": %2}}")
+                .arg("\"start\"").arg(ui->sendCIRnoBox->isChecked())
+                .toLocal8Bit();
+
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+        ui->cirButton->setText("Stop");
+    }
+    else
+    {
+
+        QByteArray message = QString("{\"cmd\": \"cir\", \"payload\": {\"action\": %1}}")
+                .arg("\"stop\"")
+                .toLocal8Bit();
+
+        socket->writeDatagram(message, message.size(), QHostAddress(Settings::host), Settings::port);
+        ui->cirButton->setText("Start");
+    }
+
+}
+

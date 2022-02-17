@@ -11,13 +11,22 @@ class RenderArea : public QWidget
 public:
     explicit RenderArea(QWidget *parent = nullptr);
 
-
+    /**
+     * @brief zoomIn zooms in the scan graph
+     */
     void zoomIn(void);
 
+    /**
+     * @brief zoomOut zooms out the scan graph
+     */
     void zoomOut(void);
 
-
+    /**
+     * @brief newScan initializes a new scan based on the incoming data
+     * @param scan_data new scanning result
+     */
     void newScan(QJsonObject scan_data);
+
 protected:
     /**
      * @brief paintEvent called when the widget needs repainting e.g. resize or new localization computed

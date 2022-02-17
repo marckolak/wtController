@@ -31,7 +31,14 @@ private:
     RenderArea *renderArea;
 
 private slots:
+    /**
+     * @brief onZoomIn called when Zoom In button is clicked
+     */
     void onZoomIn();
+
+    /**
+     * @brief onZoomOut called when Zoom Out button is clicked
+     */
     void onZoomOut();
 };
 
