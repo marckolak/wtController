@@ -4,5 +4,7 @@
     "left_motor": "/dev/ttyLeftMotor",
     "right_motor": "/dev/ttyRightMotor",
     "scanner": "/dev/ttyScanse",
-    "dummy": true
+    "dummy": true,
+    "cirCollector": "/dev/ttyCirCollector",
+    "cirSerialSpeed": 115200
 }

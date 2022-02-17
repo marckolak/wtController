@@ -11,7 +11,7 @@ import numpy as np
 from sweeppy import Sweep
 
 from wild_thumper.scanse import Scanner, ScanGetter
-
+from wild_thumper.cir import CirCollector
 
 class Robot:
     """
@@ -24,7 +24,7 @@ class Robot:
                   "right": np.array([1, -1]),
                   "stop": np.array([0, 0])}
 
-    def __init__(self, motor_left=None, motor_right=None, scanner=None, status_dict={}):
+    def __init__(self, motor_left=None, motor_right=None, scanner=None, cir_serial=None, status_dict={}):
         """Constructor
 
         Parameters
@@ -35,11 +35,14 @@ class Robot:
             right motor controller
         scanner:
             interface to control the scanner
+        cir_serial: serial.Serial
+            interface for serial communication
         """
 
         self.motor_left = motor_left  # left motor controller
         self.motor_right = motor_right  # right motor controller
         self.scanner_port = scanner  # LiDAR
+        self.cir_serial = cir_serial # CIR getter port
 
         self.motion_history = []  # motion history ts - motion parameters (for dead reckoning)
 
@@ -48,8 +51,10 @@ class Robot:
 
         self.motion_file = open('../out/slam_{}_motion.txt'.format(session_start), 'a+')
         self.scan_file = open('../out/slam_{}_scan.txt'.format(session_start), 'a+')
+        self.cir_file = open('../out/slam_{}_cir.txt'.format(session_start), 'ab+')
 
         self.scanning_done = None
+        self.cir_done = None
         self.status = status_dict
 
         self.status['start_time'] = session_start
@@ -93,6 +98,24 @@ class Robot:
 
             elif payload['action'] == 'stop':  # stop scanning
                 self.scanning_done.set()
+        except Exception:
+            pass
+
+    def process_cir_message(self, payload):
+        """Process CIR message
+
+        Parameters
+        ----------
+        payload : dict
+            CIR message payload
+        """
+        try:
+            if payload['action'] == 'start':  # start scanning
+                self.cir_done = threading.Event()
+                self.start_cir_collection()
+
+            elif payload['action'] == 'stop':  # stop scanning
+                self.cir_done.set()
         except Exception:
             pass
 
@@ -141,6 +164,12 @@ class Robot:
             self.client_comm.send(
                 bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Scanner error: " + str(e) + "\"} }",
                       'utf-8'))
+
+    def start_cir_collection(self):
+        """Start collecting CIRs
+        """
+        getter = CirCollector(self.cir_serial, self.cir_done, self.cir_file)
+        getter.start()
 
     def connect(self, address):
 

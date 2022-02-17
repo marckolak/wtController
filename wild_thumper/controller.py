@@ -5,6 +5,7 @@ import json
 import socket
 import sys
 from sweeppy import Sweep
+import serial
 
 sys.path.append('../')
 
@@ -75,6 +76,18 @@ def init_scanner(scanner_port):
         print('Scanner error: ' + str(e))
     return None
 
+def init_cir_collector(cir_port, serial_speed):
+
+    try:
+        ser = serial.Serial(cir_port, serial_speed, timeout=2)
+        # ser.set_buffer_size(rx_size = 12800, tx_size = 12800)
+        print('opened CIR UART')
+        return ser
+
+    except:
+        print('ERROR while opening serial connection')
+        return None
+
 
 def process_message(data, addr, robot):
     try:
@@ -105,6 +118,12 @@ def process_message(data, addr, robot):
         elif cmd =='status':  # send status data to the connected client
             robot.send_status()
 
+        elif cmd =='cir':  # send status data to the connected client
+            robot.process_cir_message(payload)
+
+        else:
+            print("unknown command: {}".format(cmd))
+
 
     except json.decoder.JSONDecodeError:
         robot.move('stop', 0)  # stop the robot from moving
@@ -133,6 +152,8 @@ def main():
             mc_left_port = settings['left_motor']
             mc_right_port = settings['right_motor']
             scanner_port = settings['scanner']
+            cir_port = settings['cirCollector']
+            cir_serial_speed = settings['cirSerialSpeed']
 
         except (FileNotFoundError, KeyError) as e:  # don't start the platform without settings file
             raise ControllerInitError('\033[91m' + 'Error while loading settings:  ' + str(e) + '\033[0m')
@@ -141,9 +162,10 @@ def main():
         s = init_socket(HOST, PORT)  # initialize socket
         smc_left, smc_right = init_motor_controllers(mc_left_port, mc_right_port, status_dict)  # initialize motors
         init_scanner(scanner_port)  # initialize scanner
+        cir_serial = init_cir_collector(cir_port, cir_serial_speed)
 
         # create robot instance
-        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port, status_dict=status_dict)
+        robot = Robot(motor_left=smc_left, motor_right=smc_right, scanner=scanner_port, cir_serial=cir_serial, status_dict=status_dict)
 
         # MAIN LOOP
         # wait for upcoming packets
