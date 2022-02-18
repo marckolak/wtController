@@ -91,6 +91,13 @@ class Robot:
         self.motion_file.flush()
 
     def process_scan_message(self, payload):
+        """Process scan message
+
+        Parameters
+        ----------
+        payload : list
+            list of motion commands in dict format
+        """
 
         try:
             if payload['action'] == 'start':  # start scanning
@@ -120,7 +127,10 @@ class Robot:
             pass
 
     def stop_scanner(self):
+        """Stops scanning
 
+        Turns of the LiDAR motor
+        """
         try:
             with Sweep(self.scanner_port) as sweep:
                 sweep.set_motor_speed(0)
@@ -132,9 +142,16 @@ class Robot:
                       'utf-8'))
 
     def start_scanner(self, speed, rate):
+        """Starts up the scanner
 
+        Parameters
+        ----------
+        speed: int
+            scanner motor speed (turns per second)
+        rate: int
+            LiDAR sampling rate 
+        """
         try:
-            print(type(speed))
             with Sweep(self.scanner_port) as sweep:
                 sweep.set_motor_speed(2)
                 sweep.set_sample_rate(750)
@@ -142,8 +159,7 @@ class Robot:
                 for i in range(20):  # wait until the scanner is ready or 20 seconds
                     ready = sweep.get_motor_ready()
                     if ready:
-                        print('scanner ready to scan')
-                        print(sweep.get_sample_rate())
+                        print('Scanner ready to scan. Sample rate {}'.format(sweep.get_sample_rate()))
                         break
                     else:
                         time.sleep(1)
@@ -172,6 +188,15 @@ class Robot:
         getter.start()
 
     def connect(self, address):
+        """Connects to a host
+
+        Establishes a socket in ClienCommunication object
+
+        Parameters
+        ----------
+        address: str
+            host address
+        """
 
         try:  # socket initialization
             self.client_comm.connect(address)
@@ -193,10 +218,26 @@ class ClientCommunication:
     """
 
     def __init__(self, client_address=None):
+        """Initialize client communication module
+
+        Parameters
+        ----------
+        client_address: str
+            client address
+        """
+
         self.client_address = client_address
         self.client_socket = None
 
     def send(self, byte_data):
+        """Send a message
+
+        Parameters
+        ----------
+        byte_data: bytes
+            data to send in bytes
+        """
+
         try:
             self.client_socket.sendto(byte_data, self.client_address)
 
@@ -206,6 +247,16 @@ class ClientCommunication:
             print(err)
 
     def connect(self, address):
+        """Connects to a host
+
+        Establishes a socket for client communication
+
+        Parameters
+        ----------
+        address: str
+            data to send in bytes
+        """
+
         try:  # socket initialization
             self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.client_address = address
@@ -216,6 +267,8 @@ class ClientCommunication:
             print("error")
 
     def disconnect(self):
+        """Disconnect from a host
+        """
         try:
             print("Disconnecting from {} ...".format(self.client_address))
             self.send(bytes("{\"cmd\": \"direct_print\", \"payload\":{\"text\": \"Disconnected\"}}", 'utf-8'))

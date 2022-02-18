@@ -13,7 +13,7 @@ class CirCollector(threading.Thread):
     """
 
     def __init__(self, port, stop_criterion, cir_file):
-        """_summary_
+        """CirCollector constructor
 
         Parameters
         ----------

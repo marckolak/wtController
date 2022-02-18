@@ -17,7 +17,8 @@ class MovementThread(threading.Thread):
         ----------
         robot: wild_thumper.robot.Robot
             robot controller object
-        motion_sequence
+        motion_sequence: list
+            list of consecutive motion commands building a path
         """
         super().__init__()
         self.robot = robot

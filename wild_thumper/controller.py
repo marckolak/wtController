@@ -19,11 +19,27 @@ dummy_mode = False
 
 
 class ControllerInitError(Exception):
+    """
+    Controller Init Error
+    """
     def __init__(self, message):
         super(ControllerInitError, self).__init__(message)
 
 
 def init_socket(host, port):
+    """CirCollector constructor
+
+    Parameters
+    ----------
+    port : str
+        nRF52840 DK (SEGGER J-Link) port
+    serial_speed : int
+        serial speed
+    cir_file : File
+        file for CIR saving
+    stop_criterion : threading.Event
+        stop flag
+        """
     try:  # socket initialization
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind(('', port))
@@ -35,6 +51,17 @@ def init_socket(host, port):
 
 
 def init_motor_controllers(mc_left_port, mc_right_port, status_dict):
+    """CirCollector constructor
+
+    Parameters
+    ----------
+    mc_left_port : str
+        left mc port name
+    mc_right_port : str
+        right mc port name
+    status_dict : dict
+        status dictionary (updated when mc initialized succesfully)
+    """
     try:  # initialize motor controllers
         
         mc_port_l = open_port(mc_left_port)
@@ -66,6 +93,14 @@ def init_motor_controllers(mc_left_port, mc_right_port, status_dict):
 
 
 def init_scanner(scanner_port):
+    """CirCollector constructor
+
+    Parameters
+    ----------
+    scanner_port : str
+        scanner port name
+    """
+
     # initialize LiDAR - set speed to 0 Hz
     try:
         with Sweep(scanner_port) as sweep:
@@ -77,6 +112,17 @@ def init_scanner(scanner_port):
     return None
 
 def init_cir_collector(cir_port, serial_speed):
+    """Initialize cir collection
+
+    Initializes Serial instance for UART communication
+
+    Parameters
+    ----------
+    cir_port : str
+        cir collector port name
+    serial_speed : int
+        serial port baud rate
+    """
 
     try:
         ser = serial.Serial(cir_port, serial_speed, timeout=2)
@@ -90,6 +136,17 @@ def init_cir_collector(cir_port, serial_speed):
 
 
 def process_message(data, addr, robot):
+    """Process a message received over UDP
+
+    Parameters
+    ----------
+    data : bytes
+        cir collector port name
+    addr : str
+        address of the transmitter
+    robot : Robot
+        Robot instance
+    """
     try:
         # load json object from message
         message = json.loads(data)
@@ -131,6 +188,11 @@ def process_message(data, addr, robot):
 
 
 def main():
+    """Main function
+
+    Raises:
+        ControllerInitError: raised when the robot controller is unable to initialize
+    """
     print("Starting wild thumper controller")
 
     # init status dictionary
